@@ -1,0 +1,15 @@
+ Extrato Conta Corrente
+Conta ;00000000
+Período ;09/08/2026 a 06/11/2026
+Saldo ;319,27
+
+Data Lançamento;Histórico;Descrição;Valor;Saldo
+05/11/2026;Compra no débito;Dl          *uberridessao Paulo    Bra;-17,94;319,27
+04/11/2026;Compra no débito;Uber Uber *trip Help.usp           Bra;-22,93;337,21
+02/11/2026;Pix recebido;Maria Oliveira;1.040,00;419,97
+02/11/2026;Pix enviado ;Jorge da Silva;-40,00;379,97
+27/10/2026;Pagamento efetuado;Pagamento Fatura - FULANO DE TAL;-96,99;791,72
+11/10/2026;Recarga;TIM;-20,00;1.925,02
+19/09/2026;Compra no débito;Mso Comercio Atacadistgoiania      Bra;-20,00;1.223,53
+26/08/2026;Compra no débito;;-4,30;772,72
+20/08/2026;Compra no débito;Sitpass*1t260820-w5rw  Goiania       Bra;-4,30;1.407,51
