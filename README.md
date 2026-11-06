@@ -50,6 +50,16 @@ npm run dev
 | `npm test`      | Roda os testes                  |
 | `npm run lint`  | Roda o ESLint                   |
 
+### Com Docker
+
+```bash
+docker compose up -d --build
+```
+
+Abra http://localhost:8080. Para parar, use `docker compose down`.
+
+Os dados ficam no navegador, não no container: parar ou recriar o container não apaga nada. Eles também são separados dos dados do site publicado e do `npm run dev`, porque cada endereço tem o próprio armazenamento.
+
 ## Como adicionar um banco
 
 1. Crie `src/features/import/parsers/meubanco.ts` exportando um `BankParser`:

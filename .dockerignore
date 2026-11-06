@@ -1,0 +1,13 @@
+.git
+.github
+node_modules
+dist
+coverage
+docs
+
+# Dados financeiros reais nunca entram na imagem
+faturas
+**/*.pdf
+**/*.xlsx
+**/*.ofx
+.env*

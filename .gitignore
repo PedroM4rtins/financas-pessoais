@@ -10,3 +10,5 @@ coverage/
 *.ofx
 faturas/
 .env*
+financas-*.csv
+financas-backup-*.json

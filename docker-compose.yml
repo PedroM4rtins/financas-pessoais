@@ -1,0 +1,10 @@
+services:
+  app:
+    build: .
+    container_name: financas-pessoais
+    # Um único serviço não precisa de rede própria.
+    network_mode: bridge
+    # Só este computador acessa: 127.0.0.1 não expõe o app para a rede.
+    ports:
+      - '127.0.0.1:8080:80'
+    restart: unless-stopped
