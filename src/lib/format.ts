@@ -2,7 +2,7 @@ const brl = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' 
 
 /** Formata centavos como R$ 1.234,56. */
 export function formatBRL(cents: number): string {
-  return brl.format(cents / 100).replace(/ /g, ' ');
+  return brl.format(cents / 100).replace(/\u00a0/g, ' ');
 }
 
 /** Converte "1.234,56" em centavos, sem passar por ponto flutuante. */

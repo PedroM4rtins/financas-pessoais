@@ -1,0 +1,132 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --c-bg: 245 243 238;
+  --c-panel: 255 255 255;
+  --c-ink: 28 31 36;
+  --c-muted: 107 111 118;
+  --c-line: 230 226 217;
+  --c-head: 250 249 246;
+  --c-unc: 255 248 242;
+  --c-accent: 31 111 92;
+  --c-accent-soft: 227 240 235;
+  --c-on-accent: 255 255 255;
+  --c-warn: 180 84 26;
+  --c-warn-soft: 251 237 227;
+  --c-warn-line: 241 207 182;
+  --c-drop-line: 191 216 207;
+  color-scheme: light;
+}
+
+:root.dark {
+  --c-bg: 15 20 18;
+  --c-panel: 24 31 28;
+  --c-ink: 232 236 233;
+  --c-muted: 154 163 158;
+  --c-line: 46 56 52;
+  --c-head: 30 38 35;
+  --c-unc: 46 34 24;
+  --c-accent: 63 178 143;
+  --c-accent-soft: 30 56 48;
+  --c-on-accent: 12 26 21;
+  --c-warn: 236 148 92;
+  --c-warn-soft: 58 38 26;
+  --c-warn-line: 92 58 36;
+  --c-drop-line: 52 92 80;
+  color-scheme: dark;
+}
+
+@layer base {
+  body {
+    @apply bg-bg font-sans text-ink;
+    font-size: 14px;
+    line-height: 1.45;
+  }
+
+  :focus-visible {
+    outline: 2px solid rgb(var(--c-accent));
+    outline-offset: 1px;
+  }
+}
+
+@layer components {
+  .page {
+    animation: page-in 200ms ease-out;
+  }
+
+  .card {
+    @apply rounded-card border border-line bg-panel p-[18px];
+  }
+
+  .card-title {
+    @apply mb-3 flex items-center justify-between text-[13px] font-semibold text-muted;
+  }
+
+  .table-card {
+    @apply overflow-x-auto rounded-card border border-line bg-panel;
+  }
+
+  .btn {
+    @apply inline-flex cursor-pointer items-center gap-1.5 rounded-btn bg-accent px-3.5 py-2 text-[13px] font-semibold hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50;
+    color: rgb(var(--c-on-accent));
+  }
+
+  .btn-ghost {
+    @apply inline-flex cursor-pointer items-center gap-1.5 rounded-btn border border-line bg-transparent px-3.5 py-2 text-[13px] font-semibold text-ink hover:bg-bg disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  .btn-sm {
+    @apply px-2.5 py-[5px] text-xs;
+  }
+
+  .field {
+    @apply rounded-btn border border-line bg-panel px-[11px] py-2 text-ink;
+  }
+
+  .note {
+    @apply text-[11px] text-muted;
+  }
+
+  .th {
+    @apply whitespace-nowrap border-b border-line bg-head px-3 py-2.5 text-left text-xs font-semibold uppercase tracking-[0.04em] text-muted;
+  }
+
+  .td {
+    @apply border-b border-line px-3 py-[9px] align-middle;
+  }
+
+  .num {
+    @apply text-right font-semibold tabular-nums;
+  }
+
+  .track {
+    @apply block overflow-hidden rounded-[9px] bg-bg;
+  }
+
+  .chip {
+    @apply rounded-md bg-bg px-[7px] py-0.5 text-[11px] text-muted;
+  }
+
+  .empty {
+    @apply p-[50px] text-center text-muted;
+  }
+}
+
+@keyframes page-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page {
+    animation: none;
+  }
+}

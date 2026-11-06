@@ -17,10 +17,11 @@ export class ScannedPdfError extends Error {
 }
 
 export async function extractPdfText(data: ArrayBuffer, password?: string): Promise<string> {
+  // O pdf.js transfere o buffer para o worker; a cópia preserva o original para nova senha.
+  const task = pdfjs.getDocument({ data: new Uint8Array(data.slice(0)), password });
   let document: pdfjs.PDFDocumentProxy;
   try {
-    // O pdf.js transfere o buffer para o worker; a cópia preserva o original para nova senha.
-    document = await pdfjs.getDocument({ data: new Uint8Array(data.slice(0)), password }).promise;
+    document = await task.promise;
   } catch (error) {
     if (error instanceof Error && error.name === 'PasswordException') {
       throw new PdfPasswordError(password !== undefined);
@@ -45,7 +46,7 @@ export async function extractPdfText(data: ArrayBuffer, password?: string): Prom
     }
     pages.push(groupIntoLines(items).join('\n'));
   }
-  await document.destroy();
+  await task.destroy();
 
   const text = pages.join('\n');
   if (text.replace(/\s/g, '').length < 20) throw new ScannedPdfError();
@@ -55,7 +56,7 @@ export async function extractPdfText(data: ArrayBuffer, password?: string): Prom
 /** Os bancos exportam CSV em UTF-8 ou Windows-1252. */
 export function decodeText(data: ArrayBuffer): string {
   try {
-    return new TextDecoder('utf-8', { fatal: true }).decode(data).replace(/^﻿/, '');
+    return new TextDecoder('utf-8', { fatal: true }).decode(data).replace(/^\ufeff/, '');
   } catch {
     return new TextDecoder('windows-1252').decode(data);
   }

@@ -1,11 +1,5 @@
 export type TransactionKind =
-  | 'compra'
-  | 'pix_enviado'
-  | 'pix_recebido'
-  | 'estorno'
-  | 'tarifa'
-  | 'pagamento_fatura'
-  | 'outro';
+  'compra' | 'pix_enviado' | 'pix_recebido' | 'estorno' | 'tarifa' | 'pagamento_fatura' | 'outro';
 
 export type ClassifiedBy = 'regra_usuario' | 'palavra_chave' | 'manual' | null;
 

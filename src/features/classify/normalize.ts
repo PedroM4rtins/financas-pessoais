@@ -1,7 +1,7 @@
 export function normalizeText(text: string): string {
   return text
     .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '')
+    .replace(/[\u0300-\u036f]/g, '')
     .toUpperCase()
     .replace(/\s+/g, ' ')
     .trim();
@@ -81,7 +81,7 @@ function extractInstallment(text: string): {
 
 function stripPrefixes(text: string): string {
   let current = text;
-  for (let changed = true; changed; ) {
+  for (let changed = true; changed;) {
     changed = false;
     for (const prefix of PREFIXES) {
       const next = current.replace(prefix, '').trim();

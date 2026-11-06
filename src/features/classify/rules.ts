@@ -71,8 +71,15 @@ type Classifiable = Pick<
   'name' | 'document' | 'rawDescription' | 'categoryId' | 'classifiedBy'
 >;
 
-/** `sortedRules` deve vir de sortRules(). */
-export function classify(tx: Classifiable, sortedRules: Rule[]): Classification {
+/**
+ * `sortedRules` deve vir de sortRules(). `validCategories` evita que uma palavra-chave
+ * aponte para uma categoria que o usuário excluiu.
+ */
+export function classify(
+  tx: Classifiable,
+  sortedRules: Rule[],
+  validCategories?: Set<string>,
+): Classification {
   if (tx.classifiedBy === 'manual') {
     return { categoryId: tx.categoryId, classifiedBy: 'manual' };
   }
@@ -82,24 +89,29 @@ export function classify(tx: Classifiable, sortedRules: Rule[]): Classification 
   }
   // A descrição original guarda pistas que a normalização remove, como IFD*.
   const categoryId = matchKeyword(tx.name) ?? matchKeyword(tx.rawDescription);
-  return categoryId
+  return categoryId && (!validCategories || validCategories.has(categoryId))
     ? { categoryId, classifiedBy: 'palavra_chave' }
     : { categoryId: null, classifiedBy: null };
 }
 
 /** Devolve só as transações cuja classificação mudou. */
-export function reclassify(transactions: Transaction[], rules: Rule[]): Transaction[] {
+export function reclassify(
+  transactions: Transaction[],
+  rules: Rule[],
+  validCategories?: Set<string>,
+): Transaction[] {
   const sorted = sortRules(rules);
   const changed: Transaction[] = [];
   for (const tx of transactions) {
-    const next = classify(tx, sorted);
+    const next = classify(tx, sorted, validCategories);
     if (
       next.categoryId !== tx.categoryId ||
       next.classifiedBy !== tx.classifiedBy ||
       next.ruleId !== tx.ruleId
     ) {
-      const { ruleId: _previous, ...rest } = tx;
-      changed.push({ ...rest, ...next });
+      const updated: Transaction = { ...tx, ...next };
+      if (!next.ruleId) delete updated.ruleId;
+      changed.push(updated);
     }
   }
   return changed;
