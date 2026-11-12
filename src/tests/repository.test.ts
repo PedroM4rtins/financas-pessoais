@@ -2,15 +2,18 @@ import 'fake-indexeddb/auto';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { db } from '../db';
 import {
+  addNote,
   addRule,
   clearAllData,
   deleteCategory,
+  deleteNote,
   deleteRule,
   exportBackup,
   parseBackup,
   restoreBackup,
   saveImport,
   setManualCategory,
+  updateNote,
 } from '../db/repository';
 import type { ImportedFile, Transaction } from '../db/types';
 import { buildTransactions } from '../features/import/buildTransactions';
@@ -116,7 +119,7 @@ describe('repository', () => {
   });
 
   it('recusa backup inválido', () => {
-    expect(() => parseBackup('{"version":2}')).toThrow('inválido');
+    expect(() => parseBackup('{"version":3}')).toThrow('inválido');
     expect(() => parseBackup('isto não é json')).toThrow('inválido');
   });
 
@@ -127,6 +130,40 @@ describe('repository', () => {
       transactions: [...backup.transactions, { id: 'sem-valor', date: '2026-11-01' }],
     };
     expect(() => parseBackup(JSON.stringify(broken))).toThrow('inválido');
+    expect(await db.transactions.count()).toBe(3);
+  });
+
+  it('salva, edita e exclui anotações', async () => {
+    const id = await addNote({
+      kind: 'lembrete',
+      title: 'Pagar IPVA',
+      body: 'Vence dia 20',
+      date: '2026-11-20',
+    });
+    const note = await db.notes.get(id);
+    expect(note?.title).toBe('Pagar IPVA');
+    await updateNote({ ...note!, kind: 'conta', pinned: true });
+    expect(await db.notes.get(id)).toMatchObject({ kind: 'conta', pinned: true });
+    await deleteNote(id);
+    expect(await db.notes.count()).toBe(0);
+  });
+
+  it('o backup leva as anotações junto', async () => {
+    await addNote({ kind: 'meta', title: 'Reserva', body: '', date: '2026-12-01' });
+    const backup = parseBackup(JSON.stringify(await exportBackup()));
+    await clearAllData();
+    expect(await db.notes.count()).toBe(0);
+    await restoreBackup(backup);
+    expect((await db.notes.toArray()).map((note) => note.title)).toEqual(['Reserva']);
+  });
+
+  it('aceita backup antigo, sem anotações', async () => {
+    await addNote({ kind: 'geral', title: 'Some ao restaurar', body: '', date: '2026-11-01' });
+    // JSON.stringify descarta o campo undefined: fica igual a um backup da versão 1.
+    const old = { ...(await exportBackup()), version: 1, notes: undefined };
+    const backup = parseBackup(JSON.stringify(old));
+    await restoreBackup(backup);
+    expect(await db.notes.count()).toBe(0);
     expect(await db.transactions.count()).toBe(3);
   });
 });

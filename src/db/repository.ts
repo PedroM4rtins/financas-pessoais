@@ -5,6 +5,7 @@ import {
   needsReview,
   type Category,
   type ImportedFile,
+  type Note,
   type Rule,
   type Transaction,
 } from './types';
@@ -96,29 +97,50 @@ export async function deleteCategory(id: string): Promise<void> {
   await reapplyRules();
 }
 
+type NewNote = Omit<Note, 'id' | 'createdAt' | 'updatedAt'>;
+
+export async function addNote(note: NewNote): Promise<string> {
+  const id = crypto.randomUUID();
+  const now = new Date().toISOString();
+  await db.notes.add({ ...note, id, createdAt: now, updatedAt: now });
+  return id;
+}
+
+export async function updateNote(note: Note): Promise<void> {
+  await db.notes.put({ ...note, updatedAt: new Date().toISOString() });
+}
+
+export async function deleteNote(id: string): Promise<void> {
+  await db.notes.delete(id);
+}
+
+/** Versão 1 não tinha anotações; ela continua sendo aceita na restauração. */
 export type Backup = {
-  version: 1;
+  version: 2;
   exportedAt: string;
   transactions: Transaction[];
   rules: Rule[];
   categories: Category[];
   files: ImportedFile[];
+  notes: Note[];
 };
 
 export async function exportBackup(): Promise<Backup> {
-  const [transactions, rules, categories, files] = await Promise.all([
+  const [transactions, rules, categories, files, notes] = await Promise.all([
     db.transactions.toArray(),
     db.rules.toArray(),
     db.categories.toArray(),
     db.files.toArray(),
+    db.notes.toArray(),
   ]);
   return {
-    version: 1,
+    version: 2,
     exportedAt: new Date().toISOString(),
     transactions,
     rules,
     categories,
     files,
+    notes,
   };
 }
 
@@ -141,6 +163,7 @@ const SHAPES = {
   },
   categories: { id: 'string', name: 'string', color: 'string', icon: 'string' },
   files: { id: 'string', fileName: 'string' },
+  notes: { id: 'string', kind: 'string', title: 'string', body: 'string', date: 'string' },
 } satisfies Record<string, Shape>;
 
 const hasShape = (items: unknown, shape: Shape): boolean =>
@@ -159,23 +182,24 @@ const hasShape = (items: unknown, shape: Shape): boolean =>
  * um JSON qualquer não pode deixar o banco pela metade.
  */
 export function parseBackup(json: string): Backup {
-  let data: Partial<Backup>;
+  let data: Partial<Omit<Backup, 'version'>> & { version?: unknown };
   try {
-    data = JSON.parse(json) as Partial<Backup>;
+    data = JSON.parse(json) as typeof data;
   } catch {
     throw new Error('Arquivo de backup inválido');
   }
+  if (data.version === 1) data = { ...data, notes: [] };
   const valid =
-    data.version === 1 &&
+    (data.version === 1 || data.version === 2) &&
     typeof data.exportedAt === 'string' &&
     Object.entries(SHAPES).every(([table, shape]) =>
       hasShape(data[table as keyof typeof SHAPES], shape),
     );
   if (!valid) throw new Error('Arquivo de backup inválido');
-  return data as Backup;
+  return { ...data, version: 2 } as Backup;
 }
 
-const allTables = [db.transactions, db.rules, db.categories, db.files];
+const allTables = [db.transactions, db.rules, db.categories, db.files, db.notes];
 
 /** Substitui tudo o que existe pelos dados do backup. */
 export async function restoreBackup(backup: Backup): Promise<void> {
@@ -185,6 +209,7 @@ export async function restoreBackup(backup: Backup): Promise<void> {
     await db.rules.bulkAdd(backup.rules);
     await db.categories.bulkAdd(backup.categories);
     await db.files.bulkAdd(backup.files);
+    await db.notes.bulkAdd(backup.notes);
   });
 }
 

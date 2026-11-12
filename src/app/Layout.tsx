@@ -6,6 +6,7 @@ import {
   Lock,
   ReceiptText,
   Settings,
+  StickyNote,
   Tags,
   Wand2,
 } from 'lucide-react';
@@ -21,6 +22,7 @@ const LINKS = [
   { to: '/revisao', icon: ListChecks, label: 'Revisar' },
   { to: '/regras', icon: Wand2, label: 'Regras' },
   { to: '/categorias', icon: Tags, label: 'Categorias' },
+  { to: '/anotacoes', icon: StickyNote, label: 'Anotações' },
   { to: '/configuracoes', icon: Settings, label: 'Configurações' },
 ];
 
