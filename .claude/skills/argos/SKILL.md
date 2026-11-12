@@ -35,9 +35,11 @@ O número da PR vem em `$ARGUMENTS`. Se vier vazio, use a PR da branch atual
 ## Passo a passo
 
 1. **Metadados.**
+
    ```
    gh pr view <N> --json number,title,body,state,isDraft,baseRefName,headRefName,headRefOid,files
    ```
+
    A PR precisa estar `OPEN`, não ser draft e ter base `main`; se não, pare e
    explique. Guarde `headRefOid`: é o SHA que você vai aprovar ou reprovar.
 
@@ -51,10 +53,12 @@ O número da PR vem em `$ARGUMENTS`. Se vier vazio, use a PR da branch atual
 3. **Leia o diff inteiro** com `gh pr diff <N>`. Leia o conteúdo, não só os nomes
    dos arquivos. Quando precisar do contexto em volta, leia o arquivo na versão da
    PR sem mexer na working tree do usuário:
+
    ```
    git fetch origin pull/<N>/head
    git show <headRefOid>:<caminho>
    ```
+
    Para comparar com a `main`, use `git show origin/main:<caminho>`.
 
 4. **CI.** Espere os checks do commit terminarem:
@@ -133,9 +137,11 @@ O número da PR vem em `$ARGUMENTS`. Se vier vazio, use a PR da branch atual
      e o status já cumpre esse papel.
 
 9. **Merge, só se for go.**
+
    ```
    gh pr merge <N> --squash --delete-branch --match-head-commit <headRefOid>
    ```
+
    O `--match-head-commit` garante que só entra o commit que você analisou. Se a
    PR recebeu push depois da análise, o merge falha: rode o Argos de novo. Se o
    merge falhar por outro motivo (conflito, check pendente), não force nem use
