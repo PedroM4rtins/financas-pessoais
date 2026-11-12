@@ -12,3 +12,6 @@ faturas/
 .env*
 financas-*.csv
 financas-backup-*.json
+
+# Saída do graphify: gerada localmente, pode ser reconstruída com /graphify
+graphify-out/

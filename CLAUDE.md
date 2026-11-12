@@ -27,6 +27,11 @@ atualizá-las, use `npx skills update -p` numa branch e abra PR. Antes de
 instalar uma skill nova, leia o conteúdo dela inteiro: o repositório é público
 e skills rodam com as permissões do agente.
 
+A skill `graphify` precisa do programa instalado em cada máquina:
+`uv tool install graphifyy==0.9.107` (o pacote tem dois "y"). A saída fica em
+`graphify-out/`, fora do Git. Os hooks e o modo "sempre ligado" do graphify
+(`graphify claude install`) não estão ativados neste projeto.
+
 ## Antes de abrir a PR
 
 Rode localmente o mesmo que o CI roda:
