@@ -5,6 +5,7 @@ import {
   needsReview,
   type Category,
   type ImportedFile,
+  type MediaItem,
   type Note,
   type Rule,
   type Transaction,
@@ -114,33 +115,56 @@ export async function deleteNote(id: string): Promise<void> {
   await db.notes.delete(id);
 }
 
-/** Versão 1 não tinha anotações; ela continua sendo aceita na restauração. */
+type NewMedia = Omit<MediaItem, 'id' | 'createdAt' | 'updatedAt'>;
+
+export async function addMedia(item: NewMedia): Promise<string> {
+  const id = crypto.randomUUID();
+  const now = new Date().toISOString();
+  await db.media.add({ ...item, id, createdAt: now, updatedAt: now });
+  return id;
+}
+
+export async function updateMedia(item: MediaItem): Promise<void> {
+  await db.media.put({ ...item, updatedAt: new Date().toISOString() });
+}
+
+export async function deleteMedia(id: string): Promise<void> {
+  await db.media.delete(id);
+}
+
+/**
+ * Versão 1 não tinha anotações e a 2 não tinha o catálogo; as duas continuam sendo
+ * aceitas na restauração, com essas listas vazias.
+ */
 export type Backup = {
-  version: 2;
+  version: 3;
   exportedAt: string;
   transactions: Transaction[];
   rules: Rule[];
   categories: Category[];
   files: ImportedFile[];
   notes: Note[];
+  media: MediaItem[];
 };
 
 export async function exportBackup(): Promise<Backup> {
-  const [transactions, rules, categories, files, notes] = await Promise.all([
+  const [transactions, rules, categories, files, notes, media] = await Promise.all([
     db.transactions.toArray(),
     db.rules.toArray(),
     db.categories.toArray(),
     db.files.toArray(),
     db.notes.toArray(),
+    db.media.toArray(),
   ]);
   return {
-    version: 2,
+    version: 3,
     exportedAt: new Date().toISOString(),
     transactions,
     rules,
     categories,
     files,
     notes,
+    media,
   };
 }
 
@@ -164,6 +188,7 @@ const SHAPES = {
   categories: { id: 'string', name: 'string', color: 'string', icon: 'string' },
   files: { id: 'string', fileName: 'string' },
   notes: { id: 'string', kind: 'string', title: 'string', body: 'string', date: 'string' },
+  media: { id: 'string', type: 'string', status: 'string', title: 'string', notes: 'string' },
 } satisfies Record<string, Shape>;
 
 const hasShape = (items: unknown, shape: Shape): boolean =>
@@ -189,17 +214,18 @@ export function parseBackup(json: string): Backup {
     throw new Error('Arquivo de backup inválido');
   }
   if (data.version === 1) data = { ...data, notes: [] };
+  if (data.version === 1 || data.version === 2) data = { ...data, media: [] };
   const valid =
-    (data.version === 1 || data.version === 2) &&
+    (data.version === 1 || data.version === 2 || data.version === 3) &&
     typeof data.exportedAt === 'string' &&
     Object.entries(SHAPES).every(([table, shape]) =>
       hasShape(data[table as keyof typeof SHAPES], shape),
     );
   if (!valid) throw new Error('Arquivo de backup inválido');
-  return { ...data, version: 2 } as Backup;
+  return { ...data, version: 3 } as Backup;
 }
 
-const allTables = [db.transactions, db.rules, db.categories, db.files, db.notes];
+const allTables = [db.transactions, db.rules, db.categories, db.files, db.notes, db.media];
 
 /** Substitui tudo o que existe pelos dados do backup. */
 export async function restoreBackup(backup: Backup): Promise<void> {
@@ -210,6 +236,7 @@ export async function restoreBackup(backup: Backup): Promise<void> {
     await db.categories.bulkAdd(backup.categories);
     await db.files.bulkAdd(backup.files);
     await db.notes.bulkAdd(backup.notes);
+    await db.media.bulkAdd(backup.media);
   });
 }
 

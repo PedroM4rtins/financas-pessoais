@@ -14,6 +14,7 @@ const Revisao = page(() => import('../pages/Revisao'), 'Revisao');
 const Regras = page(() => import('../pages/Regras'), 'Regras');
 const Categorias = page(() => import('../pages/Categorias'), 'Categorias');
 const Anotacoes = page(() => import('../pages/Anotacoes'), 'Anotacoes');
+const Catalogo = page(() => import('../pages/Catalogo'), 'Catalogo');
 const Configuracoes = page(() => import('../pages/Configuracoes'), 'Configuracoes');
 
 // HashRouter: o GitHub Pages não reescreve rotas e daria 404 ao recarregar a página.
@@ -30,6 +31,7 @@ export function App() {
             <Route path="regras" element={<Regras />} />
             <Route path="categorias" element={<Categorias />} />
             <Route path="anotacoes" element={<Anotacoes />} />
+            <Route path="catalogo" element={<Catalogo />} />
             <Route path="configuracoes" element={<Configuracoes />} />
           </Route>
         </Routes>

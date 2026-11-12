@@ -1,6 +1,6 @@
 import Dexie, { type EntityTable } from 'dexie';
 import { DEFAULT_CATEGORIES } from './seed';
-import type { Category, ImportedFile, Note, Rule, Transaction } from './types';
+import type { Category, ImportedFile, MediaItem, Note, Rule, Transaction } from './types';
 
 export const db = new Dexie('financas-pessoais') as Dexie & {
   transactions: EntityTable<Transaction, 'id'>;
@@ -8,6 +8,7 @@ export const db = new Dexie('financas-pessoais') as Dexie & {
   categories: EntityTable<Category, 'id'>;
   files: EntityTable<ImportedFile, 'id'>;
   notes: EntityTable<Note, 'id'>;
+  media: EntityTable<MediaItem, 'id'>;
 };
 
 db.version(1).stores({
@@ -19,6 +20,10 @@ db.version(1).stores({
 
 db.version(2).stores({
   notes: 'id, date, kind',
+});
+
+db.version(3).stores({
+  media: 'id, type, status',
 });
 
 db.on('populate', (tx) => {
