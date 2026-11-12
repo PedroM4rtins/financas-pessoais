@@ -28,7 +28,7 @@ export function Dropzone({ onFiles }: Props) {
       <div className="text-4xl">📄</div>
       <b className="mb-1 mt-2 block text-base">Solte seus arquivos aqui ou clique para escolher</b>
       <span className="text-muted">
-        PDF ou CSV · Inter · Nubank · Itaú · Bradesco · C6 · Mercado Pago · genérico
+        PDF ou CSV · Inter, Nubank e Itaú · outros bancos pelo leitor genérico
       </span>
       <input
         ref={input}

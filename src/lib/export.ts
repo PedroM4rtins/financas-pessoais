@@ -32,7 +32,8 @@ export function download(blob: Blob, fileName: string): void {
   link.href = url;
   link.download = fileName;
   link.click();
-  URL.revokeObjectURL(url);
+  // Revogar na hora pode cancelar o download em alguns navegadores, como o Firefox.
+  setTimeout(() => URL.revokeObjectURL(url), 10_000);
 }
 
 /** Planilhas executam células que começam com estes sinais: descrições vêm de arquivos externos. */

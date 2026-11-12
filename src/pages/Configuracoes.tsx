@@ -1,8 +1,17 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { PageHeader } from '../components/PageHeader';
 import { useToast } from '../components/Toast';
-import { clearAllData, exportBackup, parseBackup, restoreBackup } from '../db/repository';
+import { useTransactions } from '../db/hooks';
+import {
+  clearAllData,
+  exportBackup,
+  parseBackup,
+  restoreBackup,
+  type Backup,
+} from '../db/repository';
 import { download } from '../lib/export';
+import { transactionCount } from '../lib/format';
+import { isStoragePersisted, requestPersistentStorage } from '../lib/storage';
 import { loadTheme, saveTheme, type Theme } from '../lib/theme';
 
 const THEMES: { value: Theme; label: string }[] = [
@@ -16,6 +25,19 @@ export function Configuracoes() {
   const input = useRef<HTMLInputElement>(null);
   const [theme, setTheme] = useState(loadTheme);
   const [confirming, setConfirming] = useState(false);
+  const [incoming, setIncoming] = useState<{ name: string; backup: Backup } | null>(null);
+  const [persisted, setPersisted] = useState<boolean | null>(null);
+  const current = useTransactions().length;
+
+  useEffect(() => {
+    void isStoragePersisted().then(setPersisted);
+  }, []);
+
+  async function protect() {
+    const granted = await requestPersistentStorage();
+    setPersisted(granted);
+    toast(granted ? '🔒 Dados protegidos' : 'O navegador não liberou a proteção agora');
+  }
 
   async function backup() {
     const data = await exportBackup();
@@ -24,13 +46,18 @@ export function Configuracoes() {
     toast(`💾 Backup salvo: ${name}`);
   }
 
-  async function restore(file: File) {
+  async function pick(file: File) {
     try {
-      await restoreBackup(parseBackup(await file.text()));
-      toast('✅ Backup restaurado');
+      setIncoming({ name: file.name, backup: parseBackup(await file.text()) });
     } catch {
       toast('Esse arquivo não é um backup válido');
     }
+  }
+
+  async function restore(backup: Backup) {
+    setIncoming(null);
+    await restoreBackup(backup);
+    toast('✅ Backup restaurado');
   }
 
   return (
@@ -79,11 +106,53 @@ export function Configuracoes() {
               aria-label="Arquivo de backup"
               onChange={(event) => {
                 const file = event.target.files?.[0];
-                if (file) void restore(file);
+                if (file) void pick(file);
                 event.target.value = '';
               }}
             />
           </div>
+          {incoming && (
+            <div
+              role="alert"
+              className="mt-3 rounded-btn border bg-warn-soft p-3 text-[13px]"
+              style={{ borderColor: 'rgb(var(--c-warn-line))' }}
+            >
+              <p className="mb-2.5">
+                Restaurar <b>{incoming.name}</b>, de{' '}
+                {new Date(incoming.backup.exportedAt).toLocaleDateString('pt-BR')}, com{' '}
+                {transactionCount(incoming.backup.transactions.length)}? As{' '}
+                {transactionCount(current)} de agora serão substituídas.
+              </p>
+              <div className="flex flex-wrap gap-2">
+                <button className="btn btn-sm" onClick={() => void restore(incoming.backup)}>
+                  Sim, restaurar
+                </button>
+                <button className="btn-ghost btn-sm" onClick={() => void backup()}>
+                  Salvar backup do atual antes
+                </button>
+                <button className="btn-ghost btn-sm" onClick={() => setIncoming(null)}>
+                  Cancelar
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div className="card">
+          <h3 className="card-title">Proteção dos dados</h3>
+          <p className="mb-3 text-muted">
+            {persisted
+              ? 'Protegido: o navegador não apaga estes dados para liberar espaço.'
+              : 'Sem proteção, o navegador pode apagar estes dados quando o disco estiver cheio. Faça backups e peça a proteção.'}
+          </p>
+          {persisted === false && (
+            <button className="btn-ghost" onClick={() => void protect()}>
+              🔒 Proteger dados
+            </button>
+          )}
+          {persisted === null && (
+            <p className="note">Este navegador não informa se os dados estão protegidos.</p>
+          )}
         </div>
 
         <div className="card">

@@ -117,5 +117,16 @@ describe('repository', () => {
 
   it('recusa backup inválido', () => {
     expect(() => parseBackup('{"version":2}')).toThrow('inválido');
+    expect(() => parseBackup('isto não é json')).toThrow('inválido');
+  });
+
+  it('recusa backup com registro incompleto, antes de apagar qualquer coisa', async () => {
+    const backup = await exportBackup();
+    const broken = {
+      ...backup,
+      transactions: [...backup.transactions, { id: 'sem-valor', date: '2026-11-01' }],
+    };
+    expect(() => parseBackup(JSON.stringify(broken))).toThrow('inválido');
+    expect(await db.transactions.count()).toBe(3);
   });
 });

@@ -5,7 +5,7 @@ import { useToast } from '../components/Toast';
 import { useCategories } from '../db/hooks';
 import { deleteCategory, saveCategory } from '../db/repository';
 import type { Category } from '../db/types';
-import { formatBRL } from '../lib/format';
+import { formatBRL, parseMoneyInput } from '../lib/format';
 
 type Draft = { id?: string; name: string; color: string; icon: string; budget: string };
 
@@ -13,7 +13,8 @@ const EMPTY: Draft = { name: '', color: '#3A7BD5', icon: '📦', budget: '' };
 
 const toDraft = (category: Category): Draft => ({
   ...category,
-  budget: category.budget ? String(category.budget / 100) : '',
+  // Volta para o formulário como a pessoa digitaria: 1.500,00.
+  budget: category.budget ? formatBRL(category.budget).replace(/^R\$\s*/, '') : '',
 });
 
 export function Categorias() {
@@ -29,7 +30,11 @@ export function Categorias() {
       toast('Digite um nome para a categoria');
       return;
     }
-    const budget = Math.round(Number(draft.budget.replace(',', '.')) * 100);
+    const budget = draft.budget.trim() ? parseMoneyInput(draft.budget) : 0;
+    if (budget === null) {
+      toast('Orçamento inválido. Use o formato 1.500,00');
+      return;
+    }
     await saveCategory({
       id: draft.id ?? crypto.randomUUID(),
       name,

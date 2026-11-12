@@ -116,6 +116,11 @@ export function Dashboard() {
           <div className="mt-1 text-xs text-muted">
             {delta === null ? (
               'Sem mês anterior para comparar'
+            ) : Math.round(delta) === 0 ? (
+              <>
+                Igual a {monthLabel(shiftMonth(month, -1)).split(' ')[0]?.toLowerCase()} (
+                {formatBRL(previous)})
+              </>
             ) : (
               <>
                 <span className={delta > 0 ? 'text-warn' : 'text-accent'}>
