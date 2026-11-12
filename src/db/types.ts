@@ -46,6 +46,21 @@ export type Category = {
   budget?: number;
 };
 
+export type NoteKind = 'geral' | 'lembrete' | 'meta' | 'conta' | 'ideia';
+
+export type Note = {
+  id: string;
+  kind: NoteKind;
+  title: string;
+  body: string;
+  /** Data a que a anotação se refere (yyyy-mm-dd), escolhida pela pessoa. */
+  date: string;
+  /** Fixadas aparecem antes das outras. */
+  pinned?: boolean;
+  createdAt: string;
+  updatedAt: string;
+};
+
 export type ImportedFile = {
   id: string;
   fileName: string;
