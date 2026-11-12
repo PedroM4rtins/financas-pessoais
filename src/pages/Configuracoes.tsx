@@ -56,8 +56,13 @@ export function Configuracoes() {
 
   async function restore(backup: Backup) {
     setIncoming(null);
-    await restoreBackup(backup);
-    toast('✅ Backup restaurado');
+    try {
+      await restoreBackup(backup);
+      toast('✅ Backup restaurado');
+    } catch {
+      // A restauração roda numa transação: se falha, os dados de antes continuam lá.
+      toast('Não foi possível restaurar. Seus dados atuais continuam como estavam.');
+    }
   }
 
   return (
@@ -66,7 +71,7 @@ export function Configuracoes() {
 
       <div className="flex flex-col gap-4">
         <div className="card">
-          <h3 className="card-title">Tema</h3>
+          <h2 className="card-title">Tema</h2>
           <select
             className="field"
             aria-label="Tema"
@@ -86,7 +91,7 @@ export function Configuracoes() {
         </div>
 
         <div className="card">
-          <h3 className="card-title">Backup</h3>
+          <h2 className="card-title">Backup</h2>
           <p className="mb-3 text-muted">
             Seus dados existem só neste navegador. O backup leva transações, regras e categorias
             para outro computador. Restaurar substitui tudo o que está aqui.
@@ -139,7 +144,7 @@ export function Configuracoes() {
         </div>
 
         <div className="card">
-          <h3 className="card-title">Proteção dos dados</h3>
+          <h2 className="card-title">Proteção dos dados</h2>
           <p className="mb-3 text-muted">
             {persisted
               ? 'Protegido: o navegador não apaga estes dados para liberar espaço.'
@@ -156,7 +161,7 @@ export function Configuracoes() {
         </div>
 
         <div className="card">
-          <h3 className="card-title">Apagar todos os dados</h3>
+          <h2 className="card-title">Apagar todos os dados</h2>
           <p className="mb-3 text-muted">
             Remove transações, regras e arquivos importados, e volta às categorias padrão. Não dá
             para desfazer sem um backup.

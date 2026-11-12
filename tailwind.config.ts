@@ -22,6 +22,9 @@ export default {
           hover: '#22302C',
           active: '#2A3B36',
           text: '#CFD8D4',
+          muted: '#8C9A95',
+          badge: '#B4541A',
+          logo: '#3FB28F',
         },
         accent: { DEFAULT: token('accent'), soft: token('accent-soft') }, // #1F6F5C, #E3F0EB
         warn: { DEFAULT: token('warn'), soft: token('warn-soft') }, // #B4541A, #FBEDE3
