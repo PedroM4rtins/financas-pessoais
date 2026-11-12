@@ -54,6 +54,7 @@ export function Regras() {
   const toast = useToast();
   const [draft, setDraft] = useState<Draft>(EMPTY);
   const [tested, setTested] = useState<string | null>(null);
+  const [confirming, setConfirming] = useState<string | null>(null);
 
   const change = (patch: Partial<Draft>) => {
     setDraft((current) => ({ ...current, ...patch }));
@@ -126,56 +127,68 @@ export function Regras() {
       />
 
       <form className="card mb-4" onSubmit={(event) => void submit(event)}>
-        <h3 className="card-title">{draft.id ? 'Editar regra' : 'Nova regra'}</h3>
-        <div className="grid grid-cols-[120px_130px_minmax(0,1fr)_190px_90px] items-center gap-2.5 max-[900px]:grid-cols-1">
-          <select
-            className="field"
-            aria-label="Campo"
-            value={draft.field}
-            onChange={(event) => change({ field: event.target.value as RuleField })}
-          >
-            {Object.entries(FIELDS).map(([key, label]) => (
-              <option key={key} value={key}>
-                {label}
-              </option>
-            ))}
-          </select>
-          <select
-            className="field"
-            aria-label="Operador"
-            value={draft.operator}
-            onChange={(event) => change({ operator: event.target.value as RuleOperator })}
-          >
-            {Object.entries(OPERATORS).map(([key, label]) => (
-              <option key={key} value={key}>
-                {label}
-              </option>
-            ))}
-          </select>
-          <input
-            type="text"
-            className="field min-w-0"
-            aria-label="Valor"
-            placeholder="ex.: JORGE DA SILVA"
-            value={draft.value}
-            onChange={(event) => change({ value: event.target.value })}
-          />
-          <select
-            className="field"
-            aria-label="Categoria"
-            value={categoryId}
-            onChange={(event) => change({ categoryId: event.target.value })}
-          >
-            <CategoryOptions categories={categories} />
-          </select>
-          <input
-            type="number"
-            className="field min-w-0"
-            aria-label="Prioridade"
-            title="Prioridade: maior vence"
-            value={draft.priority}
-            onChange={(event) => change({ priority: Number(event.target.value) })}
-          />
+        <h2 className="card-title">{draft.id ? 'Editar regra' : 'Nova regra'}</h2>
+        <div className="grid grid-cols-[120px_130px_minmax(0,1fr)_190px_90px] items-end gap-2.5 max-[900px]:grid-cols-1">
+          <label className="flex min-w-0 flex-col gap-1">
+            <span className="text-xs font-semibold text-muted">Campo</span>
+            <select
+              className="field"
+              value={draft.field}
+              onChange={(event) => change({ field: event.target.value as RuleField })}
+            >
+              {Object.entries(FIELDS).map(([key, label]) => (
+                <option key={key} value={key}>
+                  {label}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="flex min-w-0 flex-col gap-1">
+            <span className="text-xs font-semibold text-muted">Condição</span>
+            <select
+              className="field"
+              value={draft.operator}
+              onChange={(event) => change({ operator: event.target.value as RuleOperator })}
+            >
+              {Object.entries(OPERATORS).map(([key, label]) => (
+                <option key={key} value={key}>
+                  {label}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="flex min-w-0 flex-col gap-1">
+            <span className="text-xs font-semibold text-muted">Valor</span>
+            <input
+              type="text"
+              className="field min-w-0"
+              placeholder="ex.: JORGE DA SILVA"
+              value={draft.value}
+              onChange={(event) => change({ value: event.target.value })}
+            />
+          </label>
+          <label className="flex min-w-0 flex-col gap-1">
+            <span className="text-xs font-semibold text-muted">Categoria</span>
+            <select
+              className="field"
+              value={categoryId}
+              onChange={(event) => change({ categoryId: event.target.value })}
+            >
+              <CategoryOptions categories={categories} />
+            </select>
+          </label>
+          <label className="flex min-w-0 flex-col gap-1">
+            <span className="text-xs font-semibold text-muted">
+              Prioridade<span className="sr-only"> (maior vence)</span>
+            </span>
+            <input
+              type="number"
+              title="Quando duas regras servem, a de maior prioridade vence"
+              className="field min-w-0"
+              value={draft.priority}
+              onChange={(event) => change({ priority: Number(event.target.value) })}
+            />
+          </label>
         </div>
         <div className="mt-2.5 flex flex-wrap items-center gap-2.5">
           <button className="btn">{draft.id ? 'Salvar' : 'Adicionar'}</button>
@@ -235,16 +248,23 @@ export function Regras() {
                     >
                       Editar
                     </button>
-                    <button
-                      className="btn-ghost btn-sm"
-                      onClick={() => {
-                        void deleteRule(rule.id).then(() =>
-                          toast('🗑️ Regra excluída e transações reclassificadas'),
-                        );
-                      }}
-                    >
-                      Excluir
-                    </button>
+                    {confirming === rule.id ? (
+                      <button
+                        className="btn-ghost btn-sm text-warn"
+                        onClick={() => {
+                          setConfirming(null);
+                          void deleteRule(rule.id).then(() =>
+                            toast('🗑️ Regra excluída e transações reclassificadas'),
+                          );
+                        }}
+                      >
+                        Confirmar exclusão
+                      </button>
+                    ) : (
+                      <button className="btn-ghost btn-sm" onClick={() => setConfirming(rule.id)}>
+                        Excluir
+                      </button>
+                    )}
                   </div>
                 </td>
               </tr>

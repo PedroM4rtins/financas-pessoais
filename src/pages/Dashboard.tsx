@@ -109,7 +109,7 @@ export function Dashboard() {
 
       <div className="grid grid-cols-4 gap-4 max-[900px]:grid-cols-2">
         <div className="card">
-          <h3 className="card-title">Total gasto</h3>
+          <h2 className="card-title">Total gasto</h2>
           <div className="text-[26px] font-bold tabular-nums tracking-[-0.02em]">
             {formatBRL(total)}
           </div>
@@ -135,14 +135,14 @@ export function Dashboard() {
           </div>
         </div>
         <div className="card">
-          <h3 className="card-title">Transações</h3>
+          <h2 className="card-title">Transações</h2>
           <div className="text-[26px] font-bold tabular-nums tracking-[-0.02em]">{data.count}</div>
           <div className="mt-1 text-xs text-muted">
             Ticket médio {formatBRL(data.count ? Math.round(total / data.count) : 0)}
           </div>
         </div>
         <div className="card">
-          <h3 className="card-title">Maior categoria</h3>
+          <h2 className="card-title">Maior categoria</h2>
           <div className="text-xl font-bold tracking-[-0.02em]">
             {top ? `${categoryOf(top.key).icon} ${top.name}` : '-'}
           </div>
@@ -157,7 +157,7 @@ export function Dashboard() {
           className={`card flex flex-col items-stretch justify-start text-left ${pending ? 'cursor-pointer bg-warn-soft' : ''}`}
           style={pending ? { borderColor: 'rgb(var(--c-warn-line))' } : undefined}
         >
-          <h3 className="card-title">Sem categoria</h3>
+          <h2 className="card-title">Sem categoria</h2>
           <div
             className={`text-[26px] font-bold tabular-nums tracking-[-0.02em] ${pending ? 'text-warn' : ''}`}
           >
@@ -171,7 +171,7 @@ export function Dashboard() {
 
       <div className="mt-4 grid grid-cols-[1.1fr_1.4fr] gap-4 max-[1100px]:grid-cols-1">
         <div className="card">
-          <h3 className="card-title">Gastos por categoria</h3>
+          <h2 className="card-title">Gastos por categoria</h2>
           {total > 0 ? (
             <CategoryDonut slices={data.slices} total={total} />
           ) : (
@@ -179,16 +179,16 @@ export function Dashboard() {
           )}
         </div>
         <div className="card">
-          <h3 className="card-title">
+          <h2 className="card-title">
             Últimos 6 meses <span className="note font-normal">empilhado por categoria</span>
-          </h3>
+          </h2>
           <MonthlyBars rows={data.rows} series={series} current={monthShort(month)} />
         </div>
       </div>
 
       <div className="mt-4 grid grid-cols-2 gap-4 max-[900px]:grid-cols-1">
         <div className="card">
-          <h3 className="card-title">Onde mais gastei</h3>
+          <h2 className="card-title">Onde mais gastei</h2>
           {data.merchants.map((merchant) => (
             <div
               key={merchant.name}
@@ -212,7 +212,7 @@ export function Dashboard() {
           {data.merchants.length === 0 && <p className="text-muted">Nenhum gasto neste mês.</p>}
         </div>
         <div className="card">
-          <h3 className="card-title">Orçamento do mês</h3>
+          <h2 className="card-title">Orçamento do mês</h2>
           {budgets.length === 0 && (
             <p className="text-muted">
               Defina um orçamento em{' '}

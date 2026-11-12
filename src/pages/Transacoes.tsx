@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { CategoryOptions } from '../components/CategoryOptions';
 import { PageHeader } from '../components/PageHeader';
 import { useToast } from '../components/Toast';
@@ -12,7 +12,14 @@ import { exportCsv, exportXlsx } from '../lib/export';
 import { documentLabel, formatBRL, formatDocument, transactionCount } from '../lib/format';
 
 type SortKey = 'date' | 'name' | 'amount';
-type Pending = { tx: Transaction; categoryId: string; top: number; left: number };
+type Pending = {
+  tx: Transaction;
+  categoryId: string;
+  top: number;
+  left: number;
+  /** Recebe o foco de volta quando a pergunta fecha. */
+  anchor: HTMLSelectElement;
+};
 
 const ORIGIN: Record<string, string> = {
   regra_usuario: 'via sua regra',
@@ -45,6 +52,12 @@ export function Transacoes() {
     descending: true,
   });
   const [pending, setPending] = useState<Pending | null>(null);
+  const firstAction = useRef<HTMLButtonElement>(null);
+
+  function close() {
+    pending?.anchor.focus();
+    setPending(null);
+  }
 
   const months = useMemo(
     () => [...new Set(transactions.map((tx) => monthOf(tx.date)))].sort().reverse(),
@@ -75,11 +88,16 @@ export function Transacoes() {
 
   useEffect(() => {
     if (!pending) return;
-    const close = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') setPending(null);
+    // A pergunta fica no fim da página: sem isto, o teclado teria de atravessar a tabela.
+    firstAction.current?.focus();
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        pending.anchor.focus();
+        setPending(null);
+      }
     };
-    window.addEventListener('keydown', close);
-    return () => window.removeEventListener('keydown', close);
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
   }, [pending]);
 
   const others = pending
@@ -90,7 +108,7 @@ export function Transacoes() {
     : 0;
 
   async function always({ tx, categoryId }: Pending) {
-    setPending(null);
+    close();
     // Manual nunca é sobrescrita por regra: esta linha precisa da troca direta.
     if (tx.classifiedBy === 'manual') await setManualCategory([tx.id], categoryId);
     const count = await addRule(ruleFor(tx, categoryId));
@@ -100,7 +118,7 @@ export function Transacoes() {
   }
 
   async function once({ tx, categoryId }: Pending) {
-    setPending(null);
+    close();
     await setManualCategory([tx.id], categoryId);
     toast('✏️ Classificado manualmente');
   }
@@ -208,7 +226,7 @@ export function Transacoes() {
             <tr>
               {header('Data', 'date')}
               {header('Descrição', 'name')}
-              <th className="th">Origem</th>
+              <th className="th">Banco</th>
               <th className="th">Categoria</th>
               {header('Valor', 'amount', true)}
             </tr>
@@ -247,6 +265,7 @@ export function Transacoes() {
                           categoryId: event.target.value,
                           top: box.bottom + 6,
                           left: Math.max(16, Math.min(box.left, window.innerWidth - 296)),
+                          anchor: event.target,
                         });
                       }}
                     >
@@ -272,7 +291,8 @@ export function Transacoes() {
           <button
             aria-label="Cancelar"
             className="fixed inset-0 z-10 cursor-default"
-            onClick={() => setPending(null)}
+            tabIndex={-1}
+            onClick={close}
           />
           <div
             role="dialog"
@@ -290,12 +310,15 @@ export function Transacoes() {
                 </>
               )}
             </p>
-            <div className="flex gap-2">
-              <button className="btn btn-sm" onClick={() => void always(pending)}>
+            <div className="flex flex-wrap gap-2">
+              <button ref={firstAction} className="btn btn-sm" onClick={() => void always(pending)}>
                 Sim, sempre
               </button>
               <button className="btn-ghost btn-sm" onClick={() => void once(pending)}>
                 Só esta
+              </button>
+              <button className="btn-ghost btn-sm" onClick={close}>
+                Cancelar
               </button>
             </div>
           </div>

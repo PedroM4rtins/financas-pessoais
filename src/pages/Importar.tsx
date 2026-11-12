@@ -20,7 +20,10 @@ type Item = {
 };
 
 const FileIcon = ({ label }: { label: string }) => (
-  <div className="grid h-[46px] w-[38px] shrink-0 place-items-center rounded-md bg-[#FBE4E1] text-[11px] font-extrabold text-[#C2392B]">
+  <div
+    aria-hidden="true"
+    className="grid h-[46px] w-[38px] shrink-0 place-items-center rounded-md bg-warn-soft text-[11px] font-extrabold text-warn"
+  >
     {label}
   </div>
 );
@@ -205,7 +208,7 @@ export function Importar() {
       ))}
 
       <div className="card mt-4">
-        <h3 className="card-title">Arquivos importados</h3>
+        <h2 className="card-title">Arquivos importados</h2>
         {imported.length === 0 && <p className="text-muted">Nenhum arquivo importado ainda.</p>}
         {imported.map((file) => (
           <div

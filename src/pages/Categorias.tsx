@@ -51,7 +51,7 @@ export function Categorias() {
       <PageHeader title="Categorias" subtitle="Cores, ícones e orçamento mensal de cada uma" />
 
       <form className="card mb-4" onSubmit={(event) => void submit(event)}>
-        <h3 className="card-title">{draft.id ? 'Editar categoria' : 'Nova categoria'}</h3>
+        <h2 className="card-title">{draft.id ? 'Editar categoria' : 'Nova categoria'}</h2>
         <div className="grid grid-cols-[minmax(0,1fr)_70px_70px_160px_auto] items-center gap-2.5 max-[900px]:grid-cols-1">
           <input
             type="text"
