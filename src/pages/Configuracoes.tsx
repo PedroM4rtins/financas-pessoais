@@ -93,8 +93,9 @@ export function Configuracoes() {
         <div className="card">
           <h2 className="card-title">Backup</h2>
           <p className="mb-3 text-muted">
-            Seus dados existem só neste navegador. O backup leva transações, regras, categorias e
-            anotações para outro computador. Restaurar substitui tudo o que está aqui.
+            Seus dados existem só neste navegador. O backup leva transações, regras, categorias,
+            anotações e o catálogo de filmes e séries para outro computador. Restaurar substitui
+            tudo o que está aqui.
           </p>
           <div className="flex flex-wrap gap-2">
             <button className="btn" onClick={() => void backup()}>
@@ -163,8 +164,8 @@ export function Configuracoes() {
         <div className="card">
           <h2 className="card-title">Apagar todos os dados</h2>
           <p className="mb-3 text-muted">
-            Remove transações, regras, anotações e arquivos importados, e volta às categorias
-            padrão. Não dá para desfazer sem um backup.
+            Remove transações, regras, anotações, o catálogo e os arquivos importados, e volta às
+            categorias padrão. Não dá para desfazer sem um backup.
           </p>
           {confirming ? (
             <div className="flex gap-2">

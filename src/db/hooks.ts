@@ -2,13 +2,14 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { useMemo } from 'react';
 import { db } from '.';
 import { UNCLASSIFIED } from './seed';
-import type { Category, ImportedFile, Note, Rule, Transaction } from './types';
+import type { Category, ImportedFile, MediaItem, Note, Rule, Transaction } from './types';
 
 const NO_TRANSACTIONS: Transaction[] = [];
 const NO_RULES: Rule[] = [];
 const NO_CATEGORIES: Category[] = [];
 const NO_FILES: ImportedFile[] = [];
 const NO_NOTES: Note[] = [];
+const NO_MEDIA: MediaItem[] = [];
 
 export const useTransactions = (): Transaction[] =>
   useLiveQuery(() => db.transactions.toArray(), []) ?? NO_TRANSACTIONS;
@@ -22,6 +23,8 @@ export const useFiles = (): ImportedFile[] =>
   useLiveQuery(() => db.files.toArray(), []) ?? NO_FILES;
 
 export const useNotes = (): Note[] => useLiveQuery(() => db.notes.toArray(), []) ?? NO_NOTES;
+
+export const useMedia = (): MediaItem[] => useLiveQuery(() => db.media.toArray(), []) ?? NO_MEDIA;
 
 export type CategoryLookup = (id: string | null) => Category;
 

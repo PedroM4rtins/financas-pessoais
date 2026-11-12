@@ -1,5 +1,6 @@
 import { Suspense } from 'react';
 import {
+  Clapperboard,
   FileUp,
   LayoutDashboard,
   ListChecks,
@@ -23,6 +24,7 @@ const LINKS = [
   { to: '/regras', icon: Wand2, label: 'Regras' },
   { to: '/categorias', icon: Tags, label: 'Categorias' },
   { to: '/anotacoes', icon: StickyNote, label: 'Anotações' },
+  { to: '/catalogo', icon: Clapperboard, label: 'Filmes e séries' },
   { to: '/configuracoes', icon: Settings, label: 'Configurações' },
 ];
 

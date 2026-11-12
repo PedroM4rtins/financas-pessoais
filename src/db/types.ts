@@ -61,6 +61,28 @@ export type Note = {
   updatedAt: string;
 };
 
+export type MediaType = 'filme' | 'serie' | 'anime';
+export type MediaStatus = 'quero_ver' | 'assistindo' | 'visto' | 'abandonado';
+
+export type MediaItem = {
+  id: string;
+  type: MediaType;
+  status: MediaStatus;
+  title: string;
+  /** Ano de lançamento. */
+  year?: number;
+  /** Onde assistir: Netflix, Crunchyroll, cinema… */
+  platform?: string;
+  /** Nota de 1 a 5. */
+  rating?: number;
+  /** Quando terminou de ver (yyyy-mm-dd). */
+  watchedAt?: string;
+  /** Temporada, episódio ou qualquer comentário. */
+  notes: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
 export type ImportedFile = {
   id: string;
   fileName: string;

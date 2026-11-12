@@ -2,6 +2,7 @@ import 'fake-indexeddb/auto';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { db } from '../db';
 import {
+  addMedia,
   addNote,
   addRule,
   clearAllData,
@@ -119,7 +120,7 @@ describe('repository', () => {
   });
 
   it('recusa backup inválido', () => {
-    expect(() => parseBackup('{"version":3}')).toThrow('inválido');
+    expect(() => parseBackup('{"version":4}')).toThrow('inválido');
     expect(() => parseBackup('isto não é json')).toThrow('inválido');
   });
 
@@ -160,10 +161,28 @@ describe('repository', () => {
   it('aceita backup antigo, sem anotações', async () => {
     await addNote({ kind: 'geral', title: 'Some ao restaurar', body: '', date: '2026-11-01' });
     // JSON.stringify descarta o campo undefined: fica igual a um backup da versão 1.
-    const old = { ...(await exportBackup()), version: 1, notes: undefined };
+    const old = { ...(await exportBackup()), version: 1, notes: undefined, media: undefined };
     const backup = parseBackup(JSON.stringify(old));
     await restoreBackup(backup);
     expect(await db.notes.count()).toBe(0);
     expect(await db.transactions.count()).toBe(3);
+  });
+
+  it('o backup leva o catálogo junto', async () => {
+    await addMedia({ type: 'anime', status: 'quero_ver', title: 'Anime Fictício', notes: '' });
+    const backup = parseBackup(JSON.stringify(await exportBackup()));
+    await clearAllData();
+    expect(await db.media.count()).toBe(0);
+    await restoreBackup(backup);
+    expect((await db.media.toArray()).map((item) => item.title)).toEqual(['Anime Fictício']);
+  });
+
+  it('aceita backup da versão 2, sem catálogo', async () => {
+    await addNote({ kind: 'geral', title: 'Fica', body: '', date: '2026-11-01' });
+    await addMedia({ type: 'filme', status: 'visto', title: 'Some', notes: '' });
+    const old = { ...(await exportBackup()), version: 2, media: undefined };
+    await restoreBackup(parseBackup(JSON.stringify(old)));
+    expect(await db.media.count()).toBe(0);
+    expect(await db.notes.count()).toBe(1);
   });
 });
