@@ -131,7 +131,7 @@ export function Transacoes() {
         aria-sort={active ? (sort.descending ? 'descending' : 'ascending') : 'none'}
       >
         <button
-          className="cursor-pointer uppercase"
+          className="cursor-pointer hover:text-ink"
           onClick={() => setSort({ key, descending: active ? !sort.descending : key !== 'name' })}
         >
           {label} {active && (sort.descending ? '↓' : '↑')}

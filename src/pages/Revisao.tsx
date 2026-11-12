@@ -1,3 +1,4 @@
+import { CircleCheck } from 'lucide-react';
 import { useState } from 'react';
 import { CategoryOptions } from '../components/CategoryOptions';
 import { PageHeader } from '../components/PageHeader';
@@ -97,8 +98,13 @@ export function Revisao() {
       <div className="table-card">
         {groups.length === 0 ? (
           <div className="empty">
-            <div className="mb-1.5 text-[40px]">🎉</div>
-            <b>Tudo classificado!</b>
+            <CircleCheck
+              size={40}
+              strokeWidth={1.5}
+              aria-hidden="true"
+              className="mx-auto mb-3 text-accent"
+            />
+            <b className="font-display text-lg text-ink">Tudo classificado</b>
             <br />
             Novas transações desconhecidas aparecem aqui depois de importar.
           </div>

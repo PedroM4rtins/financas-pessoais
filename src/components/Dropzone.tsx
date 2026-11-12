@@ -1,3 +1,4 @@
+import { FileUp } from 'lucide-react';
 import { useRef, useState } from 'react';
 
 type Props = { onFiles: (files: File[]) => void };
@@ -25,8 +26,10 @@ export function Dropzone({ onFiles }: Props) {
       } bg-accent-soft hover:border-accent`}
       style={hover ? undefined : { borderColor: 'rgb(var(--c-drop-line))' }}
     >
-      <div className="text-4xl">📄</div>
-      <b className="mb-1 mt-2 block text-base">Solte seus arquivos aqui ou clique para escolher</b>
+      <FileUp size={34} strokeWidth={1.5} aria-hidden="true" className="mx-auto text-accent" />
+      <b className="mb-1 mt-3 block font-display text-[17px] tracking-[-0.01em]">
+        Solte seus arquivos aqui ou clique para escolher
+      </b>
       <span className="text-muted">
         PDF ou CSV · Inter, Nubank e Itaú · outros bancos pelo leitor genérico
       </span>

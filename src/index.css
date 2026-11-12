@@ -3,65 +3,80 @@
 @tailwind utilities;
 
 :root {
-  --c-bg: 245 243 238;
-  --c-panel: 255 255 255;
-  --c-ink: 28 31 36;
-  --c-muted: 107 111 118;
-  --c-line: 230 226 217;
-  --c-head: 250 249 246;
-  --c-unc: 255 248 242;
-  --c-accent: 31 111 92;
-  --c-accent-soft: 227 240 235;
+  --c-bg: 238 241 238;
+  --c-panel: 250 251 249;
+  --c-ink: 23 32 43;
+  --c-muted: 93 104 114;
+  --c-line: 213 219 215;
+  --c-head: 243 245 242;
+  --c-unc: 252 244 236;
+  --c-side: 229 234 230;
+  --c-side-hover: 219 225 221;
+  --c-accent: 36 70 122;
+  --c-accent-soft: 225 233 244;
   --c-on-accent: 255 255 255;
-  --c-warn: 180 84 26;
-  --c-warn-soft: 251 237 227;
-  --c-warn-line: 241 207 182;
-  --c-drop-line: 191 216 207;
+  --c-warn: 169 82 28;
+  --c-warn-soft: 250 236 224;
+  --c-warn-line: 234 200 173;
+  --c-drop-line: 168 186 212;
+  --c-toast: 23 32 43;
+  --c-guilloche: 36 70 122;
   color-scheme: light;
 }
 
 :root.dark {
-  --c-bg: 15 20 18;
-  --c-panel: 24 31 28;
-  --c-ink: 232 236 233;
-  --c-muted: 154 163 158;
-  --c-line: 46 56 52;
-  --c-head: 30 38 35;
-  --c-unc: 46 34 24;
-  --c-accent: 63 178 143;
-  --c-accent-soft: 30 56 48;
-  --c-on-accent: 12 26 21;
-  --c-warn: 236 148 92;
-  --c-warn-soft: 58 38 26;
-  --c-warn-line: 92 58 36;
-  --c-drop-line: 52 92 80;
+  --c-bg: 17 23 30;
+  --c-panel: 24 31 40;
+  --c-ink: 230 235 240;
+  --c-muted: 152 163 174;
+  --c-line: 44 54 66;
+  --c-head: 29 37 47;
+  --c-unc: 48 36 26;
+  --c-side: 13 18 24;
+  --c-side-hover: 30 38 48;
+  --c-accent: 143 176 224;
+  --c-accent-soft: 31 45 66;
+  --c-on-accent: 13 22 36;
+  --c-warn: 232 150 98;
+  --c-warn-soft: 55 37 27;
+  --c-warn-line: 94 60 38;
+  --c-drop-line: 62 84 116;
+  --c-toast: 230 235 240;
+  --c-guilloche: 143 176 224;
   color-scheme: dark;
 }
 
 @layer base {
   body {
-    @apply bg-bg font-sans text-ink;
+    @apply bg-bg font-sans text-ink antialiased;
     font-size: 14px;
-    line-height: 1.45;
+    line-height: 1.5;
+    font-feature-settings: 'cv11', 'ss01';
+  }
+
+  h1,
+  h2,
+  h3 {
+    @apply font-display;
   }
 
   :focus-visible {
     outline: 2px solid rgb(var(--c-accent));
-    outline-offset: 1px;
+    outline-offset: 2px;
   }
 }
 
 @layer components {
   .page {
-    animation: page-in 200ms ease-out;
+    animation: page-in 220ms ease-out;
   }
 
   .card {
-    @apply rounded-card border border-line bg-panel p-[18px];
+    @apply rounded-card border border-line bg-panel p-5;
   }
 
   .card-title {
-    @apply mb-3 flex items-center justify-between text-[13px] font-semibold text-muted;
+    @apply mb-4 flex items-baseline justify-between gap-3 text-[15px] font-semibold tracking-[-0.01em] text-ink;
   }
 
   .table-card {
@@ -69,12 +84,12 @@
   }
 
   .btn {
-    @apply inline-flex cursor-pointer items-center gap-1.5 rounded-btn bg-accent px-3.5 py-2 text-[13px] font-semibold hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50;
+    @apply inline-flex cursor-pointer items-center gap-1.5 rounded-btn bg-accent px-3.5 py-2 text-[13px] font-semibold transition-[filter] hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50;
     color: rgb(var(--c-on-accent));
   }
 
   .btn-ghost {
-    @apply inline-flex cursor-pointer items-center gap-1.5 rounded-btn border border-line bg-transparent px-3.5 py-2 text-[13px] font-semibold text-ink hover:bg-bg disabled:cursor-not-allowed disabled:opacity-50;
+    @apply inline-flex cursor-pointer items-center gap-1.5 rounded-btn border border-line bg-panel px-3.5 py-2 text-[13px] font-semibold text-ink transition-colors hover:border-muted/50 hover:bg-head disabled:cursor-not-allowed disabled:opacity-50;
   }
 
   .btn-sm {
@@ -82,7 +97,7 @@
   }
 
   .field {
-    @apply rounded-btn border border-line bg-panel px-[11px] py-2 text-ink;
+    @apply rounded-btn border border-line bg-panel px-[11px] py-2 text-ink transition-colors hover:border-muted/50;
   }
 
   .note {
@@ -90,11 +105,15 @@
   }
 
   .th {
-    @apply whitespace-nowrap border-b border-line bg-head px-3 py-2.5 text-left text-xs font-semibold uppercase tracking-[0.04em] text-muted;
+    @apply whitespace-nowrap border-b border-line bg-head px-3 py-2.5 text-left text-xs font-semibold text-muted;
   }
 
   .td {
-    @apply border-b border-line px-3 py-[9px] align-middle;
+    @apply border-b border-line px-3 py-2.5 align-middle;
+  }
+
+  tbody tr:hover > .td {
+    @apply bg-head;
   }
 
   .num {
@@ -102,15 +121,20 @@
   }
 
   .track {
-    @apply block overflow-hidden rounded-[9px] bg-bg;
+    @apply block overflow-hidden rounded-full bg-line/60;
   }
 
   .chip {
-    @apply rounded-md bg-bg px-[7px] py-0.5 text-[11px] text-muted;
+    @apply rounded-md bg-head px-[7px] py-0.5 text-[11px] text-muted;
   }
 
   .empty {
     @apply p-[50px] text-center text-muted;
+  }
+
+  /* Roseta guilhochê, como as das cédulas. A cor vem de --c-guilloche. */
+  .guilloche {
+    color: rgb(var(--c-guilloche));
   }
 }
 
