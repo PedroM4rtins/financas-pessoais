@@ -1,13 +1,19 @@
+import { lazy, type ComponentType } from 'react';
 import { HashRouter, Route, Routes } from 'react-router-dom';
 import { ToastProvider } from '../components/Toast';
-import { Categorias } from '../pages/Categorias';
-import { Configuracoes } from '../pages/Configuracoes';
-import { Dashboard } from '../pages/Dashboard';
-import { Importar } from '../pages/Importar';
-import { Regras } from '../pages/Regras';
-import { Revisao } from '../pages/Revisao';
-import { Transacoes } from '../pages/Transacoes';
 import { Layout } from './Layout';
+
+// Cada tela vira um arquivo à parte: a Visão geral não espera o código das outras.
+const page = <K extends string>(load: () => Promise<Record<K, ComponentType>>, name: K) =>
+  lazy(() => load().then((module) => ({ default: module[name] })));
+
+const Dashboard = page(() => import('../pages/Dashboard'), 'Dashboard');
+const Importar = page(() => import('../pages/Importar'), 'Importar');
+const Transacoes = page(() => import('../pages/Transacoes'), 'Transacoes');
+const Revisao = page(() => import('../pages/Revisao'), 'Revisao');
+const Regras = page(() => import('../pages/Regras'), 'Regras');
+const Categorias = page(() => import('../pages/Categorias'), 'Categorias');
+const Configuracoes = page(() => import('../pages/Configuracoes'), 'Configuracoes');
 
 // HashRouter: o GitHub Pages não reescreve rotas e daria 404 ao recarregar a página.
 export function App() {

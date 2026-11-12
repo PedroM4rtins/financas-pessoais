@@ -5,7 +5,7 @@ import { useToast } from '../components/Toast';
 import { useFiles } from '../db/hooks';
 import { saveImport } from '../db/repository';
 import { readImportFile, type ImportPreview } from '../features/import/importFile';
-import { PdfPasswordError, ScannedPdfError } from '../features/import/pdfText';
+import { PdfPasswordError, ScannedPdfError } from '../features/import/readErrors';
 import { dayMonth } from '../lib/dates';
 import { formatBRL, transactionCount } from '../lib/format';
 import { requestPersistentStorage } from '../lib/storage';
