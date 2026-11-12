@@ -122,14 +122,55 @@ export async function exportBackup(): Promise<Backup> {
   };
 }
 
+type Shape = Record<string, 'string' | 'number'>;
+
+const SHAPES = {
+  transactions: {
+    id: 'string',
+    fingerprint: 'string',
+    date: 'string',
+    name: 'string',
+    amount: 'number',
+  },
+  rules: {
+    id: 'string',
+    field: 'string',
+    operator: 'string',
+    value: 'string',
+    categoryId: 'string',
+  },
+  categories: { id: 'string', name: 'string', color: 'string', icon: 'string' },
+  files: { id: 'string', fileName: 'string' },
+} satisfies Record<string, Shape>;
+
+const hasShape = (items: unknown, shape: Shape): boolean =>
+  Array.isArray(items) &&
+  items.every(
+    (item) =>
+      typeof item === 'object' &&
+      item !== null &&
+      Object.entries(shape).every(
+        ([key, type]) => typeof (item as Record<string, unknown>)[key] === type,
+      ),
+  );
+
+/**
+ * Restaurar apaga o que existe, então o arquivo é conferido registro a registro antes:
+ * um JSON qualquer não pode deixar o banco pela metade.
+ */
 export function parseBackup(json: string): Backup {
-  const data = JSON.parse(json) as Partial<Backup>;
+  let data: Partial<Backup>;
+  try {
+    data = JSON.parse(json) as Partial<Backup>;
+  } catch {
+    throw new Error('Arquivo de backup inválido');
+  }
   const valid =
     data.version === 1 &&
-    Array.isArray(data.transactions) &&
-    Array.isArray(data.rules) &&
-    Array.isArray(data.categories) &&
-    Array.isArray(data.files);
+    typeof data.exportedAt === 'string' &&
+    Object.entries(SHAPES).every(([table, shape]) =>
+      hasShape(data[table as keyof typeof SHAPES], shape),
+    );
   if (!valid) throw new Error('Arquivo de backup inválido');
   return data as Backup;
 }

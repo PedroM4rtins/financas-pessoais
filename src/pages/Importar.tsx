@@ -8,6 +8,7 @@ import { readImportFile, type ImportPreview } from '../features/import/importFil
 import { PdfPasswordError, ScannedPdfError } from '../features/import/pdfText';
 import { dayMonth } from '../lib/dates';
 import { formatBRL, transactionCount } from '../lib/format';
+import { requestPersistentStorage } from '../lib/storage';
 
 type Item = {
   key: string;
@@ -87,6 +88,8 @@ export function Importar() {
     if (!item.preview) return;
     const { classified, pending } = await saveImport(item.preview.file, item.preview.transactions);
     remove(item.key);
+    // Agora há dados que só existem aqui: pede ao navegador para não apagá-los.
+    void requestPersistentStorage();
     toast(
       `📥 ${transactionCount(item.preview.transactions.length)} importadas · ${classified} classificadas automaticamente, ${pending} para revisar`,
     );

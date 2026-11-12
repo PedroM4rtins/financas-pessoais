@@ -33,7 +33,7 @@ const EMPTY: Draft = {
   field: 'name',
   operator: 'contains',
   value: '',
-  categoryId: 'alimentacao',
+  categoryId: '',
   priority: 0,
 };
 
@@ -60,6 +60,11 @@ export function Regras() {
     setTested(null);
   };
 
+  // Sem escolha (ou com uma categoria que foi excluída), vale a primeira da lista.
+  const categoryId = categories.some((category) => category.id === draft.categoryId)
+    ? draft.categoryId
+    : (categories[0]?.id ?? '');
+
   const sorted = useMemo(() => sortRules(rules), [rules]);
   const affected = useMemo(() => {
     const counts = new Map<string, number>();
@@ -79,7 +84,11 @@ export function Regras() {
       toast('Essa expressão regular é inválida');
       return null;
     }
-    const { field, operator, categoryId, priority } = draft;
+    if (!categoryId) {
+      toast('Crie uma categoria antes de criar regras');
+      return null;
+    }
+    const { field, operator, priority } = draft;
     return { field, operator, value, categoryId, priority };
   }
 
@@ -154,7 +163,7 @@ export function Regras() {
           <select
             className="field"
             aria-label="Categoria"
-            value={draft.categoryId}
+            value={categoryId}
             onChange={(event) => change({ categoryId: event.target.value })}
           >
             <CategoryOptions categories={categories} />
