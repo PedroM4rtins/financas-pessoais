@@ -4,7 +4,7 @@ import { dayMonth } from '../../lib/dates';
 import { hashBytes } from '../../lib/hash';
 import { buildTransactions } from './buildTransactions';
 import { detectParser } from './parsers';
-import { decodeText, extractPdfText } from './pdfText';
+import { decodeText } from './readErrors';
 
 export type ImportPreview = {
   file: ImportedFile;
@@ -27,7 +27,10 @@ export async function readImportFile(
   password?: string,
 ): Promise<ImportPreview> {
   const isPdf = source.name.toLowerCase().endsWith('.pdf');
-  const text = isPdf ? await extractPdfText(data, password) : decodeText(data);
+  // O pdf.js tem mais de 1 MB: só é baixado quando aparece um PDF.
+  const text = isPdf
+    ? await import('./pdfText').then(({ extractPdfText }) => extractPdfText(data, password))
+    : decodeText(data);
   const parser = detectParser(text);
   const id = await hashBytes(data);
   const all = buildTransactions(parser.parse(text), id, parser.name);

@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import { NavLink, Outlet, useLocation } from 'react-router-dom';
 import { useTransactions } from '../db/hooks';
 import { reviewGroups } from '../features/classify/review';
@@ -55,7 +56,15 @@ export function Layout() {
 
       <main className="w-full max-w-[1240px] px-[34px] pb-[60px] pt-7 max-[900px]:p-[18px]">
         <div key={pathname} className="page">
-          <Outlet />
+          <Suspense
+            fallback={
+              <p role="status" className="py-10 text-center text-muted">
+                Carregando…
+              </p>
+            }
+          >
+            <Outlet />
+          </Suspense>
         </div>
       </main>
     </div>

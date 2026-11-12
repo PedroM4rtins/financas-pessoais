@@ -1,20 +1,9 @@
 import * as pdfjs from 'pdfjs-dist';
 import workerUrl from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
 import { groupIntoLines, type PositionedText } from './lines';
+import { PdfPasswordError, ScannedPdfError } from './readErrors';
 
 pdfjs.GlobalWorkerOptions.workerSrc = workerUrl;
-
-export class PdfPasswordError extends Error {
-  constructor(public readonly incorrect: boolean) {
-    super(incorrect ? 'Senha incorreta' : 'PDF protegido por senha');
-  }
-}
-
-export class ScannedPdfError extends Error {
-  constructor() {
-    super('PDF escaneado, sem texto');
-  }
-}
 
 export async function extractPdfText(data: ArrayBuffer, password?: string): Promise<string> {
   // O pdf.js transfere o buffer para o worker; a cópia preserva o original para nova senha.
@@ -51,13 +40,4 @@ export async function extractPdfText(data: ArrayBuffer, password?: string): Prom
   const text = pages.join('\n');
   if (text.replace(/\s/g, '').length < 20) throw new ScannedPdfError();
   return text;
-}
-
-/** Os bancos exportam CSV em UTF-8 ou Windows-1252. */
-export function decodeText(data: ArrayBuffer): string {
-  try {
-    return new TextDecoder('utf-8', { fatal: true }).decode(data).replace(/^\ufeff/, '');
-  } catch {
-    return new TextDecoder('windows-1252').decode(data);
-  }
 }
