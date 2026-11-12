@@ -80,6 +80,24 @@ Os dados ficam no navegador, não no container: parar ou recriar o container nã
 
 Descrições com código único por transação, como `Sitpass*1T260810-JD60`, precisam de um apelido em `ALIASES`, no arquivo `src/features/classify/normalize.ts`. Sem isso, cada transação vira um grupo separado na Revisão.
 
+## Como contribuir
+
+A `main` é protegida: toda mudança entra por pull request e só pode ser mergeada com dois checks verdes.
+
+- **`check`**: lint, testes e build (`.github/workflows/ci.yml`).
+- **`argos`**: revisão de QA feita pelo Claude Code com a skill [`.claude/skills/argos`](.claude/skills/argos/SKILL.md). Ela procura dados reais no repositório, mudanças de schema que apagam dados, quebra do dedupe de importação, parser sem teste e dados saindo do navegador.
+
+Fluxo:
+
+```bash
+git checkout -b feat/minha-mudanca
+# ...commits...
+git push -u origin feat/minha-mudanca
+gh pr create --fill
+```
+
+Depois, numa sessão do Claude Code neste repositório, rode `/argos <número-da-PR>`. O Argos comenta na PR, marca o status `argos` no commit e, se o veredito for go, faz o merge com squash. Um push novo na PR invalida o veredito: rode o Argos de novo.
+
 ## Stack
 
 Vite, React, TypeScript, Tailwind CSS, pdf.js, Dexie (IndexedDB), Recharts, SheetJS, Vitest e React Router. O site é publicado no GitHub Pages pelo GitHub Actions.
