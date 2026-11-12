@@ -57,6 +57,12 @@ export type Note = {
   date: string;
   /** Fixadas aparecem antes das outras. */
   pinned?: boolean;
+  /** Quando avisar no WhatsApp, no fuso de quem usa: yyyy-mm-ddThh:mm. */
+  remindAt?: string;
+  /** Quando o lembrete saiu (ISO). Sem isto e com remindAt no passado, está pendente. */
+  remindedAt?: string;
+  /** Motivo da última falha de envio; some quando o envio dá certo. */
+  reminderError?: string;
   createdAt: string;
   updatedAt: string;
 };

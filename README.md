@@ -11,6 +11,7 @@ _Print com dados fictícios._
 - Os arquivos são lidos no próprio navegador. Nenhum PDF ou CSV é enviado para servidor.
 - Transações, regras e categorias ficam no IndexedDB do navegador, só na sua máquina.
 - Por isso os dados não aparecem em outro computador nem em outro navegador. Para levá-los, use o backup em Configurações.
+- Exceção opcional, desligada por padrão: os lembretes de anotações no WhatsApp. Quando você liga o envio em Configurações, o título, o texto e a data das anotações com lembrete passam pelo [CallMeBot](https://www.callmebot.com/blog/free-api-whatsapp-messages/), que manda a mensagem só para o seu número. Transações e arquivos nunca saem. A chave do serviço fica só no navegador e não vai no backup. O aviso sai com o app aberto em alguma aba; o que vencer com ele fechado sai assim que você abrir.
 - Limpar os dados do site no navegador apaga tudo. Faça backups de vez em quando.
 - O `.gitignore` bloqueia `*.pdf`, `*.xlsx`, `*.ofx` e a pasta `faturas/`. Nunca versione faturas reais: os testes usam apenas dados fictícios.
 

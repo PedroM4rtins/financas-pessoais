@@ -9,6 +9,7 @@ import {
   restoreBackup,
   type Backup,
 } from '../db/repository';
+import { WhatsAppSettings } from '../features/notes/WhatsAppSettings';
 import { download } from '../lib/export';
 import { transactionCount } from '../lib/format';
 import { isStoragePersisted, requestPersistentStorage } from '../lib/storage';
@@ -67,7 +68,10 @@ export function Configuracoes() {
 
   return (
     <>
-      <PageHeader title="Configurações" subtitle="Aparência, backup e dados do navegador" />
+      <PageHeader
+        title="Configurações"
+        subtitle="Aparência, lembretes, backup e dados do navegador"
+      />
 
       <div className="flex flex-col gap-4">
         <div className="card">
@@ -89,6 +93,8 @@ export function Configuracoes() {
             ))}
           </select>
         </div>
+
+        <WhatsAppSettings />
 
         <div className="card">
           <h2 className="card-title">Backup</h2>

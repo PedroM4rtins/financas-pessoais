@@ -14,6 +14,7 @@ import { NavLink, Outlet, useLocation } from 'react-router-dom';
 import { Guilloche } from '../components/Guilloche';
 import { useTransactions } from '../db/hooks';
 import { reviewGroups } from '../features/classify/review';
+import { useReminders } from '../features/notes/useReminders';
 
 const LINKS = [
   { to: '/', icon: LayoutDashboard, label: 'Visão geral' },
@@ -29,6 +30,7 @@ const LINKS = [
 export function Layout() {
   const pending = reviewGroups(useTransactions()).length;
   const { pathname } = useLocation();
+  useReminders();
 
   return (
     <div className="grid min-h-screen grid-cols-[236px_minmax(0,1fr)] max-[900px]:grid-cols-[minmax(0,1fr)]">

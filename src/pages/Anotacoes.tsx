@@ -1,5 +1,6 @@
-import { Pin, PinOff } from 'lucide-react';
+import { BellRing, Pin, PinOff } from 'lucide-react';
 import { useMemo, useState, type FormEvent } from 'react';
+import { Link } from 'react-router-dom';
 import { PageHeader } from '../components/PageHeader';
 import { useToast } from '../components/Toast';
 import { useNotes } from '../db/hooks';
@@ -13,6 +14,7 @@ import {
   today,
   type NoteFilter,
 } from '../features/notes/notes';
+import { isReady, isValidRemindAt, loadWhatsApp, withReminder } from '../features/notes/reminders';
 
 type Draft = {
   id?: string;
@@ -21,6 +23,8 @@ type Draft = {
   body: string;
   date: string;
   pinned: boolean;
+  remind: boolean;
+  remindAt: string;
 };
 
 const emptyDraft = (): Draft => ({
@@ -29,6 +33,8 @@ const emptyDraft = (): Draft => ({
   body: '',
   date: today(),
   pinned: false,
+  remind: false,
+  remindAt: '',
 });
 
 const toDraft = (note: Note): Draft => ({
@@ -38,7 +44,11 @@ const toDraft = (note: Note): Draft => ({
   body: note.body,
   date: note.date,
   pinned: Boolean(note.pinned),
+  remind: Boolean(note.remindAt),
+  remindAt: note.remindAt ?? '',
 });
+
+const hourMinute = (remindAt: string): string => remindAt.slice(11, 16);
 
 const DATE = /^\d{4}-\d{2}-\d{2}$/;
 
@@ -51,6 +61,8 @@ export function Anotacoes() {
 
   const visible = useMemo(() => filterNotes(notes, filter), [notes, filter]);
   const editing = notes.find((note) => note.id === draft.id);
+  // Lido ao abrir a tela: a configuração só muda em Configurações.
+  const [whatsAppReady] = useState(() => isReady(loadWhatsApp()));
 
   async function submit(event: FormEvent) {
     event.preventDefault();
@@ -64,13 +76,18 @@ export function Anotacoes() {
       toast('Escolha uma data válida');
       return;
     }
+    if (draft.remind && !isValidRemindAt(draft.remindAt)) {
+      toast('Escolha o dia e a hora do lembrete');
+      return;
+    }
+    const remindAt = draft.remind ? draft.remindAt : null;
     const fields = { kind: draft.kind, title, body, date: draft.date, pinned: draft.pinned };
     if (editing) {
-      await updateNote({ ...editing, ...fields });
+      await updateNote(withReminder({ ...editing, ...fields }, remindAt));
       toast('✅ Anotação atualizada');
     } else {
-      await addNote(fields);
-      toast('✅ Anotação criada');
+      await addNote(withReminder(fields, remindAt));
+      toast(remindAt ? '✅ Anotação criada com lembrete' : '✅ Anotação criada');
     }
     setDraft(emptyDraft());
   }
@@ -125,14 +142,39 @@ export function Anotacoes() {
           />
         </div>
         <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
-          <label className="flex cursor-pointer items-center gap-2 text-muted">
-            <input
-              type="checkbox"
-              checked={draft.pinned}
-              onChange={(event) => setDraft({ ...draft, pinned: event.target.checked })}
-            />
-            Fixar no topo
-          </label>
+          <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
+            <label className="flex cursor-pointer items-center gap-2 text-muted">
+              <input
+                type="checkbox"
+                checked={draft.pinned}
+                onChange={(event) => setDraft({ ...draft, pinned: event.target.checked })}
+              />
+              Fixar no topo
+            </label>
+            <label className="flex cursor-pointer items-center gap-2 text-muted">
+              <input
+                type="checkbox"
+                checked={draft.remind}
+                onChange={(event) =>
+                  setDraft({
+                    ...draft,
+                    remind: event.target.checked,
+                    remindAt: draft.remindAt || `${draft.date}T09:00`,
+                  })
+                }
+              />
+              Avisar no WhatsApp
+            </label>
+            {draft.remind && (
+              <input
+                type="datetime-local"
+                className="field py-1.5"
+                aria-label="Dia e hora do lembrete"
+                value={draft.remindAt}
+                onChange={(event) => setDraft({ ...draft, remindAt: event.target.value })}
+              />
+            )}
+          </div>
           <div className="flex gap-2">
             <button className="btn">{draft.id ? 'Salvar' : 'Adicionar'}</button>
             {draft.id && (
@@ -142,6 +184,22 @@ export function Anotacoes() {
             )}
           </div>
         </div>
+        {draft.remind && !whatsAppReady && (
+          <p className="note mt-2">
+            O WhatsApp ainda não está configurado. O lembrete fica salvo e só sai depois que você
+            ligar o envio em{' '}
+            <Link to="/configuracoes" className="underline">
+              Configurações
+            </Link>
+            .
+          </p>
+        )}
+        {draft.remind && whatsAppReady && (
+          <p className="note mt-2">
+            O aviso sai com o app aberto em alguma aba. Se estiver fechado na hora, sai assim que
+            você abrir.
+          </p>
+        )}
       </form>
 
       <div className="mb-4 flex flex-wrap items-center gap-2">
@@ -210,6 +268,17 @@ export function Anotacoes() {
                   <h2 className="text-[15px] font-semibold leading-snug">{note.title}</h2>
                 )}
                 {note.body && <p className="whitespace-pre-wrap break-words">{note.body}</p>}
+                {note.remindAt && (
+                  <p
+                    className={`flex items-center gap-1.5 text-xs ${note.reminderError ? 'text-warn' : 'text-muted'}`}
+                  >
+                    <BellRing size={13} strokeWidth={1.8} aria-hidden="true" />
+                    {note.remindedAt
+                      ? `Enviado no WhatsApp (${fullDate(note.remindAt)} ${hourMinute(note.remindAt)})`
+                      : `WhatsApp em ${fullDate(note.remindAt)} às ${hourMinute(note.remindAt)}`}
+                    {note.reminderError && !note.remindedAt && ` · ${note.reminderError}`}
+                  </p>
+                )}
                 <div className="mt-auto flex justify-end gap-1.5 pt-1">
                   <button className="btn-ghost btn-sm" onClick={() => edit(note)}>
                     Editar
