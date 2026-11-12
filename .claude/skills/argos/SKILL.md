@@ -73,7 +73,9 @@ O número da PR vem em `$ARGUMENTS`. Se vier vazio, use a PR da branch atual
      remoção de linhas do bloco "Dados financeiros reais" do `.gitignore`;
      fixture ou código com CPF (`\d{3}\.\d{3}\.\d{3}-\d{2}`), número de cartão
      completo, agência e conta, ou nome completo de titular. Fixtures têm que ser
-     fictícias.
+     fictícias. Arquivos de configuração não são dados: `.claude/settings.json`,
+     `skills-lock.json` e configs de ferramentas passam, desde que você confira
+     que o conteúdo é só configuração.
    - **Schema do Dexie mexido no lugar.** Alterou o `stores` de uma
      `db.version(n)` que já existe na `main` em vez de criar `db.version(n+1)`;
      removeu tabela ou índice ainda usado; ou criou um `.upgrade()` que apaga ou
