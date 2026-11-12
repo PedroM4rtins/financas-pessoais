@@ -19,6 +19,14 @@ Nunca faça merge manual, nunca use `gh pr merge --admin` e nunca desative ou
 afrouxe a proteção da `main` para contornar o Argos ou o CI. A `main` exige os
 checks `check` (lint, testes e build) e `argos`, inclusive para admins.
 
+## Skills do projeto
+
+As skills ficam versionadas em `.claude/skills/`, para funcionarem em qualquer
+máquina. A origem das instaladas pelo CLI está em `skills-lock.json`; para
+atualizá-las, use `npx skills update -p` numa branch e abra PR. Antes de
+instalar uma skill nova, leia o conteúdo dela inteiro: o repositório é público
+e skills rodam com as permissões do agente.
+
 ## Antes de abrir a PR
 
 Rode localmente o mesmo que o CI roda:
