@@ -32,6 +32,11 @@ A skill `graphify` precisa do programa instalado em cada máquina:
 `graphify-out/`, fora do Git. Os hooks e o modo "sempre ligado" do graphify
 (`graphify claude install`) não estão ativados neste projeto.
 
+O `frontend-design` não é skill em `.claude/skills/`: é um plugin, ativado em
+`.claude/settings.json`. Ativado não quer dizer instalado. Em cada máquina, rode
+uma vez `/plugin install frontend-design@claude-plugins-official` no Claude Code
+e reinicie a sessão. Sem isso, a skill não aparece e nada avisa.
+
 ## Antes de abrir a PR
 
 Rode localmente o mesmo que o CI roda:
