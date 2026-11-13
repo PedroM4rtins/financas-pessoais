@@ -4,9 +4,11 @@ import {
   countByStatus,
   filterMedia,
   parseYear,
+  posterHue,
   stars,
   withStatus,
 } from '../features/catalog/catalog';
+import { HUES } from '../lib/hues';
 
 const item = (fields: Partial<MediaItem> & Pick<MediaItem, 'id' | 'title'>): MediaItem => ({
   type: 'filme',
@@ -91,4 +93,11 @@ it('valida o ano', () => {
 
 it('desenha as estrelas da nota', () => {
   expect(stars(3)).toBe('★★★☆☆');
+});
+
+it('o cartaz tem sempre a mesma cor para o mesmo título, sem ligar para acento', () => {
+  expect(posterHue('Lâmina do Horizonte')).toBe(posterHue('LAMINA DO HORIZONTE'));
+  expect(HUES).toContain(posterHue('Qualquer título'));
+  const spread = new Set(['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'].map(posterHue));
+  expect(spread.size).toBeGreaterThan(2);
 });

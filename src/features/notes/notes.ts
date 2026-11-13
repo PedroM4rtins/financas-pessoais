@@ -1,12 +1,21 @@
+import {
+  AlarmClock,
+  Lightbulb,
+  NotebookPen,
+  ReceiptText,
+  Target,
+  type LucideIcon,
+} from 'lucide-react';
 import type { Note, NoteKind } from '../../db/types';
+import type { Hue } from '../../lib/hues';
 import { normalizeText as normalize } from '../classify/normalize';
 
-export const NOTE_KINDS: { id: NoteKind; label: string; icon: string; color: string }[] = [
-  { id: 'geral', label: 'Geral', icon: '📝', color: '#5C6B7A' },
-  { id: 'lembrete', label: 'Lembrete', icon: '⏰', color: '#3A7BD5' },
-  { id: 'conta', label: 'Conta a pagar', icon: '💸', color: '#E5484D' },
-  { id: 'meta', label: 'Meta', icon: '🎯', color: '#2A9D8F' },
-  { id: 'ideia', label: 'Ideia', icon: '💡', color: '#C9971A' },
+export const NOTE_KINDS: { id: NoteKind; label: string; icon: LucideIcon; hue: Hue }[] = [
+  { id: 'geral', label: 'Geral', icon: NotebookPen, hue: 'ardosia' },
+  { id: 'lembrete', label: 'Lembrete', icon: AlarmClock, hue: 'azul' },
+  { id: 'conta', label: 'Conta a pagar', icon: ReceiptText, hue: 'ferrugem' },
+  { id: 'meta', label: 'Meta', icon: Target, hue: 'verde' },
+  { id: 'ideia', label: 'Ideia', icon: Lightbulb, hue: 'ocre' },
 ];
 
 const FALLBACK = NOTE_KINDS[0]!;

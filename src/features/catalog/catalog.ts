@@ -1,10 +1,12 @@
+import { Popcorn, Sparkles, Tv, type LucideIcon } from 'lucide-react';
 import type { MediaItem, MediaStatus, MediaType } from '../../db/types';
+import { HUES, type Hue } from '../../lib/hues';
 import { normalizeText } from '../classify/normalize';
 
-export const MEDIA_TYPES: { id: MediaType; label: string; icon: string }[] = [
-  { id: 'filme', label: 'Filme', icon: '🎬' },
-  { id: 'serie', label: 'Série', icon: '📺' },
-  { id: 'anime', label: 'Anime', icon: '🍥' },
+export const MEDIA_TYPES: { id: MediaType; label: string; icon: LucideIcon }[] = [
+  { id: 'filme', label: 'Filme', icon: Popcorn },
+  { id: 'serie', label: 'Série', icon: Tv },
+  { id: 'anime', label: 'Anime', icon: Sparkles },
 ];
 
 export const MEDIA_STATUSES: { id: MediaStatus; label: string }[] = [
@@ -83,3 +85,15 @@ export function parseYear(text: string, now = new Date()): number | undefined | 
 }
 
 export const stars = (rating: number): string => '★'.repeat(rating) + '☆'.repeat(5 - rating);
+
+/** A cor do cartaz sai do título: o mesmo título tem sempre a mesma cor. */
+export function posterHue(title: string): Hue {
+  // FNV-1a: espalha bem até títulos parecidos. Multiplicar por 31 e tirar o resto por 6
+  // equivaleria a somar as letras, e títulos com letras parecidas cairiam na mesma cor.
+  let hash = 0x811c9dc5;
+  for (const char of normalizeText(title)) {
+    hash ^= char.charCodeAt(0);
+    hash = Math.imul(hash, 0x01000193);
+  }
+  return HUES[(hash >>> 0) % HUES.length]!;
+}
