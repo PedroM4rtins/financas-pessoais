@@ -68,7 +68,7 @@ export function ActionMenu({ label, actions }: { label: string; actions: MenuAct
         <div
           id={id}
           role="menu"
-          className="absolute right-0 top-full z-10 mt-1 min-w-[170px] rounded-btn border border-line bg-panel p-1 shadow-[0_8px_24px_rgb(0_0_0/0.12)]"
+          className="absolute right-0 top-full z-10 mt-1 min-w-[170px] rounded-btn border border-line bg-panel p-1 shadow-[0_8px_24px_rgb(var(--c-shadow)/var(--shadow-alpha))]"
         >
           {actions.map((action, index) => (
             <button

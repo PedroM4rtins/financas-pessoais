@@ -45,7 +45,7 @@ function Stat({ label, value, detail }: { label: string; value: string; detail?:
       <dd className="font-display text-[19px] font-semibold tabular-nums tracking-[-0.02em]">
         {value}
         {detail && (
-          <span className="ml-2 font-sans text-xs font-normal tracking-normal text-muted">
+          <span className="mt-0.5 block font-sans text-xs font-normal tracking-normal text-muted">
             {detail}
           </span>
         )}
@@ -89,7 +89,6 @@ export function Dashboard() {
         month: item,
         label: monthShort(item),
         total: sum ? thousands(sum) : '',
-        top: 1,
       };
       monthTotals.forEach((value, key) => {
         row[key || 'sem'] = value;

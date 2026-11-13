@@ -1,5 +1,5 @@
 import Dexie, { type EntityTable } from 'dexie';
-import { DEFAULT_CATEGORIES } from './seed';
+import { DEFAULT_CATEGORIES, recolorDefault } from './seed';
 import type { Category, ImportedFile, MediaItem, Note, Rule, Transaction } from './types';
 
 export const db = new Dexie('financas-pessoais') as Dexie & {
@@ -25,6 +25,19 @@ db.version(2).stores({
 db.version(3).stores({
   media: 'id, type, status',
 });
+
+// Só cores: as categorias padrão que ainda estão com a cor antiga ganham a da paleta nova.
+db.version(4)
+  .stores({})
+  .upgrade((tx) =>
+    tx
+      .table<Category, string>('categories')
+      .toCollection()
+      .modify((category) => {
+        const color = recolorDefault(category);
+        if (color) category.color = color;
+      }),
+  );
 
 db.on('populate', (tx) => {
   void tx.table('categories').bulkAdd(DEFAULT_CATEGORIES);
