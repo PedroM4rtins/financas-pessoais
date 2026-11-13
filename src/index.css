@@ -21,6 +21,21 @@
   --c-drop-line: 168 186 212;
   --c-toast: 23 32 43;
   --c-guilloche: 36 70 122;
+  /* Tons de cédula para marcar tipos (anotações, filmes). Os "deep" são iguais nos dois
+     temas: pintam objetos impressos, como os cartazes, que não mudam com o tema. */
+  --c-hue-azul: 36 70 122;
+  --c-hue-verde: 38 104 82;
+  --c-hue-ferrugem: 169 82 28;
+  --c-hue-vinho: 122 59 92;
+  --c-hue-ocre: 132 98 20;
+  --c-hue-ardosia: 82 94 106;
+  --c-deep-azul: 36 70 122;
+  --c-deep-verde: 38 104 82;
+  --c-deep-ferrugem: 150 72 26;
+  --c-deep-vinho: 122 59 92;
+  --c-deep-ocre: 124 92 18;
+  --c-deep-ardosia: 70 82 94;
+  --c-paper: 250 251 249;
   color-scheme: light;
 }
 
@@ -43,6 +58,12 @@
   --c-drop-line: 62 84 116;
   --c-toast: 230 235 240;
   --c-guilloche: 143 176 224;
+  --c-hue-azul: 143 176 224;
+  --c-hue-verde: 120 196 164;
+  --c-hue-ferrugem: 232 150 98;
+  --c-hue-vinho: 214 150 184;
+  --c-hue-ocre: 222 186 102;
+  --c-hue-ardosia: 160 172 184;
   color-scheme: dark;
 }
 

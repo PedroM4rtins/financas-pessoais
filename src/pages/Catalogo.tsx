@@ -1,4 +1,7 @@
-import { useMemo, useState, type FormEvent } from 'react';
+import { ChevronDown } from 'lucide-react';
+import { useMemo, useRef, useState, type FormEvent } from 'react';
+import { ActionMenu } from '../components/ActionMenu';
+import { FilterChip } from '../components/FilterChip';
 import { PageHeader } from '../components/PageHeader';
 import { useToast } from '../components/Toast';
 import { useMedia } from '../db/hooks';
@@ -10,12 +13,12 @@ import {
   MEDIA_STATUSES,
   MEDIA_TYPES,
   mediaStatus,
-  mediaType,
   parseYear,
   stars,
   withStatus,
   type MediaFilter,
 } from '../features/catalog/catalog';
+import { Poster } from '../features/catalog/Poster';
 import { fullDate, today } from '../features/notes/notes';
 
 type Draft = {
@@ -30,8 +33,8 @@ type Draft = {
   notes: string;
 };
 
-const emptyDraft = (status: MediaStatus): Draft => ({
-  type: 'filme',
+const emptyDraft = (status: MediaStatus, type: MediaType = 'filme'): Draft => ({
+  type,
   status,
   title: '',
   year: '',
@@ -55,18 +58,20 @@ const toDraft = (item: MediaItem): Draft => ({
 
 const finished = (status: MediaStatus) => status === 'visto' || status === 'abandonado';
 
-/** Atalhos de status no cartão: o próximo passo natural de cada um. */
-const NEXT: Record<MediaStatus, { status: MediaStatus; label: string }[]> = {
-  quero_ver: [
-    { status: 'assistindo', label: 'Comecei' },
-    { status: 'visto', label: 'Já vi' },
-  ],
-  assistindo: [
-    { status: 'visto', label: 'Terminei' },
-    { status: 'abandonado', label: 'Abandonei' },
-  ],
-  visto: [{ status: 'assistindo', label: 'Rever' }],
-  abandonado: [{ status: 'assistindo', label: 'Retomar' }],
+/** O próximo passo natural de cada status: vira o botão principal do cartaz. */
+const NEXT: Record<MediaStatus, { status: MediaStatus; label: string }> = {
+  quero_ver: { status: 'assistindo', label: 'Comecei' },
+  assistindo: { status: 'visto', label: 'Terminei' },
+  visto: { status: 'assistindo', label: 'Rever' },
+  abandonado: { status: 'assistindo', label: 'Retomar' },
+};
+
+/** Os outros status para onde dá para mandar o item, pelo menu "⋯". */
+const MOVE_LABEL: Record<MediaStatus, string> = {
+  quero_ver: 'Mover para “Quero ver”',
+  assistindo: 'Mover para “Assistindo”',
+  visto: 'Marcar como visto',
+  abandonado: 'Marcar como abandonado',
 };
 
 export function Catalogo() {
@@ -78,7 +83,8 @@ export function Catalogo() {
     search: '',
   });
   const [draft, setDraft] = useState<Draft>(() => emptyDraft('quero_ver'));
-  const [confirming, setConfirming] = useState<string | null>(null);
+  const [details, setDetails] = useState(false);
+  const titleInput = useRef<HTMLInputElement>(null);
 
   const visible = useMemo(() => filterMedia(items, filter), [items, filter]);
   const counts = useMemo(() => countByStatus(items), [items]);
@@ -92,16 +98,23 @@ export function Catalogo() {
     });
   }
 
+  function reset(status = filter.status) {
+    setDraft(emptyDraft(status, filter.type === 'todos' ? draft.type : filter.type));
+    setDetails(false);
+  }
+
   async function submit(event: FormEvent) {
     event.preventDefault();
     const title = draft.title.trim();
     if (!title) {
       toast('Digite o título');
+      titleInput.current?.focus();
       return;
     }
     const year = parseYear(draft.year);
     if (year === null) {
       toast('Ano inválido. Use quatro dígitos, como 2024');
+      setDetails(true);
       return;
     }
     const fields: Omit<MediaItem, 'id' | 'createdAt' | 'updatedAt'> = {
@@ -122,55 +135,52 @@ export function Catalogo() {
         createdAt: editing.createdAt,
         updatedAt: editing.updatedAt,
       });
-      toast('✅ Atualizado');
+      toast(`“${title}” salvo`);
     } else {
       await addMedia(fields);
-      toast(`✅ Adicionado em “${mediaStatus(draft.status).label}”`);
+      toast(`“${title}” adicionado em ${mediaStatus(draft.status).label}`);
     }
     setFilter({ ...filter, status: draft.status });
-    setDraft(emptyDraft(draft.status));
+    reset(draft.status);
+    titleInput.current?.focus();
   }
 
   function edit(item: MediaItem) {
     setDraft(toDraft(item));
-    document.getElementById('catalogo-titulo')?.focus();
+    setDetails(true);
+    titleInput.current?.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    titleInput.current?.focus({ preventScroll: true });
   }
 
   async function move(item: MediaItem, status: MediaStatus) {
     await updateMedia(withStatus(item, status, today()));
-    toast(`${item.title} → ${mediaStatus(status).label}`);
+    toast(`“${item.title}” em ${mediaStatus(status).label}`);
   }
 
   return (
     <>
       <PageHeader title="Filmes e séries" subtitle="Filmes, séries e animes que vi e quero ver" />
 
-      <form className="card mb-4" onSubmit={(event) => void submit(event)}>
-        <h2 className="card-title">{draft.id ? 'Editar' : 'Adicionar'}</h2>
-        <div className="grid grid-cols-[minmax(0,1fr)_140px_150px_100px] gap-2.5 max-[900px]:grid-cols-1">
-          <input
-            id="catalogo-titulo"
-            type="text"
-            className="field min-w-0"
-            aria-label="Título"
-            placeholder="Título"
-            value={draft.title}
-            onChange={(event) => setDraft({ ...draft, title: event.target.value })}
-          />
+      <form
+        className="card mb-5 p-3"
+        aria-label={draft.id ? 'Editar título' : 'Adicionar título'}
+        onSubmit={(event) => void submit(event)}
+      >
+        <div className="flex gap-2 max-[600px]:flex-wrap">
           <select
-            className="field min-w-0"
+            className="field w-[110px] shrink-0 max-[600px]:flex-1"
             aria-label="Tipo"
             value={draft.type}
             onChange={(event) => setDraft({ ...draft, type: event.target.value as MediaType })}
           >
             {MEDIA_TYPES.map((type) => (
               <option key={type.id} value={type.id}>
-                {type.icon} {type.label}
+                {type.label}
               </option>
             ))}
           </select>
           <select
-            className="field min-w-0"
+            className="field w-[140px] shrink-0 max-[600px]:flex-1"
             aria-label="Status"
             value={draft.status}
             onChange={(event) => setStatus(event.target.value as MediaStatus)}
@@ -182,100 +192,147 @@ export function Catalogo() {
             ))}
           </select>
           <input
+            ref={titleInput}
             type="text"
-            inputMode="numeric"
-            className="field min-w-0"
-            aria-label="Ano de lançamento"
-            placeholder="Ano"
-            maxLength={4}
-            value={draft.year}
-            onChange={(event) => setDraft({ ...draft, year: event.target.value })}
+            name="titulo"
+            autoComplete="off"
+            className="field min-w-0 flex-1 max-[600px]:basis-full"
+            aria-label="Título"
+            placeholder={draft.id ? 'Título' : 'Título do filme, série ou anime…'}
+            value={draft.title}
+            onChange={(event) => setDraft({ ...draft, title: event.target.value })}
           />
+          <button className="btn shrink-0">{draft.id ? 'Salvar' : 'Adicionar'}</button>
         </div>
-        <div className="mt-2.5 grid grid-cols-[minmax(0,1fr)_150px_170px] gap-2.5 max-[900px]:grid-cols-1">
-          <input
-            type="text"
-            className="field min-w-0"
-            aria-label="Onde assistir"
-            placeholder="Onde assistir (Netflix, Crunchyroll, cinema…)"
-            value={draft.platform}
-            onChange={(event) => setDraft({ ...draft, platform: event.target.value })}
-          />
-          <select
-            className="field min-w-0"
-            aria-label="Nota"
-            value={draft.rating}
-            onChange={(event) => setDraft({ ...draft, rating: event.target.value })}
-          >
-            <option value="">Sem nota</option>
-            {[5, 4, 3, 2, 1].map((rating) => (
-              <option key={rating} value={rating}>
-                {stars(rating)}
-              </option>
-            ))}
-          </select>
-          {finished(draft.status) && (
+
+        {details && (
+          <div className="mt-2 grid grid-cols-[90px_minmax(0,1fr)_150px_170px] gap-2 max-[900px]:grid-cols-2">
             <input
-              type="date"
+              type="text"
+              inputMode="numeric"
               className="field min-w-0"
-              aria-label="Quando terminou"
-              value={draft.watchedAt}
-              onChange={(event) => setDraft({ ...draft, watchedAt: event.target.value })}
+              aria-label="Ano de lançamento"
+              placeholder="Ano"
+              maxLength={4}
+              value={draft.year}
+              onChange={(event) => setDraft({ ...draft, year: event.target.value })}
             />
-          )}
-        </div>
-        <textarea
-          className="field mt-2.5 min-h-[70px] w-full resize-y"
-          aria-label="Comentários"
-          placeholder="Comentários: em que episódio parei, quem indicou, o que achei…"
-          value={draft.notes}
-          onChange={(event) => setDraft({ ...draft, notes: event.target.value })}
-        />
-        <div className="mt-3 flex justify-end gap-2">
-          <button className="btn">{draft.id ? 'Salvar' : 'Adicionar'}</button>
-          {draft.id && (
+            <input
+              type="text"
+              className="field min-w-0"
+              aria-label="Onde assistir"
+              placeholder="Onde assistir…"
+              value={draft.platform}
+              onChange={(event) => setDraft({ ...draft, platform: event.target.value })}
+            />
+            <select
+              className="field min-w-0"
+              aria-label="Nota"
+              value={draft.rating}
+              onChange={(event) => setDraft({ ...draft, rating: event.target.value })}
+            >
+              <option value="">Sem nota</option>
+              {[5, 4, 3, 2, 1].map((rating) => (
+                <option key={rating} value={rating}>
+                  {stars(rating)}
+                </option>
+              ))}
+            </select>
+            {finished(draft.status) ? (
+              <input
+                type="date"
+                className="field min-w-0"
+                aria-label="Quando terminou"
+                value={draft.watchedAt}
+                onChange={(event) => setDraft({ ...draft, watchedAt: event.target.value })}
+              />
+            ) : (
+              <span aria-hidden="true" />
+            )}
+            <textarea
+              className="field col-span-full min-h-[64px] resize-y"
+              aria-label="Comentários"
+              placeholder="Em que episódio parei, quem indicou, o que achei…"
+              value={draft.notes}
+              onChange={(event) => setDraft({ ...draft, notes: event.target.value })}
+            />
+          </div>
+        )}
+
+        <div className="mt-2 flex items-center gap-3 text-xs">
+          {draft.id ? (
             <button
               type="button"
-              className="btn-ghost"
-              onClick={() => setDraft(emptyDraft(filter.status))}
+              className="font-semibold text-muted hover:text-ink"
+              onClick={() => reset()}
             >
-              Cancelar
+              Cancelar edição
+            </button>
+          ) : (
+            <button
+              type="button"
+              className="flex items-center gap-1 font-semibold text-muted hover:text-ink"
+              aria-expanded={details}
+              onClick={() => setDetails(!details)}
+            >
+              <ChevronDown
+                size={14}
+                strokeWidth={2}
+                aria-hidden="true"
+                className={`transition-transform motion-reduce:transition-none ${details ? 'rotate-180' : ''}`}
+              />
+              {details ? 'Menos detalhes' : 'Ano, onde assistir, nota e comentários'}
             </button>
           )}
         </div>
       </form>
 
-      <div role="group" aria-label="Status" className="mb-3 flex flex-wrap gap-1.5">
-        {MEDIA_STATUSES.map((status) => (
-          <button
-            key={status.id}
-            type="button"
-            aria-pressed={filter.status === status.id}
-            className={`btn-ghost ${filter.status === status.id ? 'border-accent text-accent' : ''}`}
-            onClick={() => {
-              setFilter({ ...filter, status: status.id });
-              if (!draft.id) setStatus(status.id);
-            }}
-          >
-            {status.label}
-            <span className="chip tabular-nums">{counts[status.id]}</span>
-          </button>
-        ))}
+      <div
+        role="group"
+        aria-label="Status"
+        className="mb-4 flex gap-5 overflow-x-auto border-b border-line"
+      >
+        {MEDIA_STATUSES.map((status) => {
+          const selected = filter.status === status.id;
+          return (
+            <button
+              key={status.id}
+              type="button"
+              aria-pressed={selected}
+              className={`-mb-px flex shrink-0 items-baseline gap-1.5 border-b-2 pb-2.5 pt-1 text-[14px] transition-colors ${
+                selected
+                  ? 'border-accent font-semibold text-ink'
+                  : 'border-transparent text-muted hover:text-ink'
+              }`}
+              onClick={() => {
+                setFilter({ ...filter, status: status.id });
+                if (!draft.id) setStatus(status.id);
+              }}
+            >
+              {status.label}
+              <span className="text-xs tabular-nums text-muted">{counts[status.id]}</span>
+            </button>
+          );
+        })}
       </div>
 
       <div className="mb-4 flex flex-wrap items-center gap-2">
         <div role="group" aria-label="Filtrar por tipo" className="flex flex-wrap gap-1.5">
-          {[{ id: 'todos' as const, label: 'Todos', icon: '' }, ...MEDIA_TYPES].map((type) => (
-            <button
+          <FilterChip
+            active={filter.type === 'todos'}
+            onClick={() => setFilter({ ...filter, type: 'todos' })}
+          >
+            Todos
+          </FilterChip>
+          {MEDIA_TYPES.map((type) => (
+            <FilterChip
               key={type.id}
-              type="button"
-              aria-pressed={filter.type === type.id}
-              className={`btn-ghost btn-sm ${filter.type === type.id ? 'border-accent text-accent' : ''}`}
+              active={filter.type === type.id}
               onClick={() => setFilter({ ...filter, type: type.id })}
             >
-              {type.icon && <span aria-hidden="true">{type.icon}</span>}
+              <type.icon size={14} strokeWidth={2} aria-hidden="true" />
               {type.label}
-            </button>
+            </FilterChip>
           ))}
         </div>
         <input
@@ -291,71 +348,71 @@ export function Catalogo() {
       {visible.length === 0 ? (
         <div className="card empty">
           {counts[filter.status] === 0
-            ? `Nada em “${mediaStatus(filter.status).label}” ainda.`
+            ? `Nada em “${mediaStatus(filter.status).label}” ainda. Adicione um título no campo acima.`
             : 'Nada com esse filtro.'}
         </div>
       ) : (
-        <ul className="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-3">
+        <ul className="grid grid-cols-[repeat(auto-fill,minmax(168px,1fr))] gap-x-4 gap-y-6 max-[600px]:grid-cols-2 max-[600px]:gap-x-3">
           {visible.map((item) => {
-            const type = mediaType(item.type);
+            const next = NEXT[item.status];
+            const others = MEDIA_STATUSES.filter(
+              (status) => status.id !== item.status && status.id !== next.status,
+            );
             return (
-              <li key={item.id} className="card flex flex-col gap-2">
-                <div className="flex flex-wrap items-center gap-2 text-xs text-muted">
-                  <span className="chip">
-                    <span aria-hidden="true">{type.icon}</span> {type.label}
-                  </span>
-                  {item.year && <span className="tabular-nums">{item.year}</span>}
-                  {item.platform && <span>· {item.platform}</span>}
-                </div>
-                <h2 className="text-[15px] font-semibold leading-snug">{item.title}</h2>
-                {(item.rating || item.watchedAt) && (
-                  <p className="flex flex-wrap items-center gap-2 text-xs text-muted">
-                    {item.rating && (
-                      <span className="text-[14px] tracking-[0.1em] text-accent">
-                        <span aria-hidden="true">{stars(item.rating)}</span>
-                        <span className="sr-only">Nota {item.rating} de 5</span>
-                      </span>
-                    )}
-                    {item.watchedAt && (
+              <li key={item.id} className="flex min-w-0 flex-col gap-2">
+                <Poster item={item} />
+                <div className="min-w-0">
+                  <h2 className="sr-only">{item.title}</h2>
+                  {(item.rating || item.platform) && (
+                    <p className="flex items-center gap-2 text-xs text-muted">
+                      {item.rating && (
+                        <span className="tracking-[0.08em] text-accent">
+                          <span aria-hidden="true">{stars(item.rating)}</span>
+                          <span className="sr-only">Nota {item.rating} de 5</span>
+                        </span>
+                      )}
+                      {item.platform && <span className="truncate">{item.platform}</span>}
+                    </p>
+                  )}
+                  {item.watchedAt && (
+                    <p className="text-xs text-muted">
+                      {item.status === 'abandonado' ? 'Parei em' : 'Visto em'}{' '}
                       <time dateTime={item.watchedAt} className="tabular-nums">
-                        {item.status === 'abandonado' ? 'Parei em' : 'Visto em'}{' '}
                         {fullDate(item.watchedAt)}
                       </time>
-                    )}
-                  </p>
-                )}
-                {item.notes && (
-                  <p className="whitespace-pre-wrap break-words text-muted">{item.notes}</p>
-                )}
-                <div className="mt-auto flex flex-wrap justify-end gap-1.5 pt-1">
-                  {NEXT[item.status].map((next) => (
-                    <button
-                      key={next.status}
-                      className="btn-ghost btn-sm"
-                      onClick={() => void move(item, next.status)}
-                    >
-                      {next.label}
-                    </button>
-                  ))}
-                  <button className="btn-ghost btn-sm" onClick={() => edit(item)}>
-                    Editar
-                  </button>
-                  {confirming === item.id ? (
-                    <button
-                      className="btn-ghost btn-sm text-warn"
-                      onClick={() => {
-                        setConfirming(null);
-                        if (draft.id === item.id) setDraft(emptyDraft(filter.status));
-                        void deleteMedia(item.id).then(() => toast('🗑️ Removido do catálogo'));
-                      }}
-                    >
-                      Confirmar exclusão
-                    </button>
-                  ) : (
-                    <button className="btn-ghost btn-sm" onClick={() => setConfirming(item.id)}>
-                      Excluir
-                    </button>
+                    </p>
                   )}
+                  {item.notes && (
+                    <p className="mt-0.5 line-clamp-2 break-words text-xs text-ink/80">
+                      {item.notes}
+                    </p>
+                  )}
+                </div>
+                <div className="mt-auto flex items-center gap-1">
+                  <button
+                    className="btn-ghost btn-sm flex-1 justify-center"
+                    onClick={() => void move(item, next.status)}
+                  >
+                    {next.label}
+                  </button>
+                  <ActionMenu
+                    label={`Ações de “${item.title}”`}
+                    actions={[
+                      { label: 'Editar', onSelect: () => edit(item) },
+                      ...others.map((status) => ({
+                        label: MOVE_LABEL[status.id],
+                        onSelect: () => void move(item, status.id),
+                      })),
+                      {
+                        label: 'Excluir',
+                        confirm: 'Confirmar exclusão',
+                        onSelect: () => {
+                          if (draft.id === item.id) reset();
+                          void deleteMedia(item.id).then(() => toast(`“${item.title}” excluído`));
+                        },
+                      },
+                    ]}
+                  />
                 </div>
               </li>
             );

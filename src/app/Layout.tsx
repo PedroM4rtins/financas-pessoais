@@ -115,6 +115,14 @@ function TabBar({ pending }: { pending: number }) {
     sheet.current?.close();
   }, [pathname]);
 
+  // Alargar a janela até virar desktop esconde a barra: a folha não pode ficar sozinha.
+  useEffect(() => {
+    const wide = window.matchMedia('(min-width: 901px)');
+    const close = () => wide.matches && sheet.current?.close();
+    wide.addEventListener('change', close);
+    return () => wide.removeEventListener('change', close);
+  }, []);
+
   const tab = 'flex min-w-0 flex-1 flex-col items-center gap-0.5 px-1 pb-1.5 pt-2 text-[11px]';
 
   return (
@@ -145,10 +153,13 @@ function TabBar({ pending }: { pending: number }) {
           <Menu size={20} strokeWidth={1.8} aria-hidden="true" />
           Mais
           {pending > 0 && (
-            <span
-              className="absolute right-[calc(50%-16px)] top-1.5 h-2 w-2 rounded-full bg-warn"
-              aria-label={`${pending} para revisar`}
-            />
+            <>
+              <span
+                className="absolute right-[calc(50%-16px)] top-1.5 h-2 w-2 rounded-full bg-warn"
+                aria-hidden="true"
+              />
+              <span className="sr-only">, {pending} para revisar</span>
+            </>
           )}
         </button>
       </nav>
@@ -158,8 +169,14 @@ function TabBar({ pending }: { pending: number }) {
         aria-label="Todas as telas"
         className="mb-0 mt-auto w-full max-w-none rounded-t-card border border-line bg-sidebar p-3 pb-[calc(12px+env(safe-area-inset-bottom))] text-sidebar-text backdrop:bg-black/50"
         onClick={(event) => {
-          // Clique no fundo escurecido (fora da folha) fecha.
-          if (event.target === event.currentTarget) event.currentTarget.close();
+          // Só o clique no fundo escurecido fecha; a borda interna da folha não conta.
+          const box = event.currentTarget.getBoundingClientRect();
+          const outside =
+            event.clientY < box.top ||
+            event.clientY > box.bottom ||
+            event.clientX < box.left ||
+            event.clientX > box.right;
+          if (event.target === event.currentTarget && outside) event.currentTarget.close();
         }}
       >
         <div className="flex items-center justify-between px-3 pt-1">
