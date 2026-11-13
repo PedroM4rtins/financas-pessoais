@@ -1,6 +1,12 @@
-# Finanças Pessoais
+# Caderno
 
-Importe os extratos e as faturas do seu banco e veja para onde foi o dinheiro: classificação automática por categoria, gráficos mensais e planilha exportável. Tudo roda no navegador, sem servidor.
+Um caderno pessoal que roda só no navegador, sem servidor. Hoje tem três partes:
+
+- **Dinheiro:** importe os extratos e as faturas do seu banco e veja para onde foi o dinheiro, com classificação automática por categoria, gráficos mensais e planilha exportável.
+- **Anotações:** lembretes, contas a pagar, metas e ideias, com data.
+- **Filmes e séries:** o que você já viu e o que quer ver, de filmes, séries e animes.
+
+O repositório e o banco do navegador continuam com o nome antigo, `financas-pessoais`, para que os dados já salvos não se percam.
 
 ![Visão geral com gráficos de gastos por categoria](docs/dashboard.png)
 
