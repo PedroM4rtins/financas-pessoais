@@ -36,6 +36,8 @@
   --c-deep-ocre: 124 92 18;
   --c-deep-ardosia: 70 82 94;
   --c-paper: 250 251 249;
+  --c-shadow: 23 32 43;
+  --shadow-alpha: 0.12;
   color-scheme: light;
 }
 
@@ -64,6 +66,8 @@
   --c-hue-vinho: 214 150 184;
   --c-hue-ocre: 222 186 102;
   --c-hue-ardosia: 160 172 184;
+  --c-shadow: 0 0 0;
+  --shadow-alpha: 0.5;
   color-scheme: dark;
 }
 

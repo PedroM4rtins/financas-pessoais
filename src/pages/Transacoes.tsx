@@ -245,7 +245,10 @@ export function Transacoes() {
                         {tx.installment.current}/{tx.installment.total}
                       </span>
                     )}
-                    <span className="note block">{tx.rawDescription}</span>
+                    {/* O nome já é a descrição limpa: a original só aparece se acrescenta algo. */}
+                    {normalizeText(tx.rawDescription) !== normalizeText(tx.name) && (
+                      <span className="note block">{tx.rawDescription}</span>
+                    )}
                     {tx.document && (
                       <span className="note block font-mono">
                         {documentLabel(tx.document)} {formatDocument(tx.document)}
@@ -257,6 +260,7 @@ export function Transacoes() {
                     <select
                       className="field px-2 py-[5px] text-[13px]"
                       aria-label={`Categoria de ${tx.name}`}
+                      title={originLabel(tx)}
                       value={value}
                       onChange={(event) => {
                         const box = event.target.getBoundingClientRect();
@@ -272,7 +276,10 @@ export function Transacoes() {
                       {value === '' && <option value="">❓ Não classificado</option>}
                       <CategoryOptions categories={categories} />
                     </select>
-                    <div className="note">{originLabel(tx)}</div>
+                    {/* Palavra-chave é o caso comum: repetir em toda linha só faria ruído. */}
+                    {tx.classifiedBy !== 'palavra_chave' && (
+                      <div className="note">{originLabel(tx)}</div>
+                    )}
                   </td>
                   <td className={`td num ${highlight} ${tx.amount > 0 ? 'text-accent' : ''}`}>
                     {tx.amount > 0 ? '+ ' : ''}
